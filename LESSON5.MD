@@ -25,34 +25,6 @@
 
 ## Заготовка программы
 
-#### Класс WorkCalculator
-```Java
-package ru.yandex.practicum.work;
-
-public class WorkCalculator {
-    
-    public int workingHours = 8; 
-    String workerName;  
-    private double coefficient; 
-
-    WorkCalculator(String newName) {
-        workerName = newName;
-    }
-
-    private String getWorkerName() {
-        return workerName;
-    }
-
-    int calculate(int workDays) {
-        return workDays * workingHours; 
-    }
-
-    double calculateWithCoefficient(int workDays) {
-        return workDays * workingHours * coefficient;
-    }
-}
-```
-
 #### Класс Main
 ```Java
 package ru.yandex.practicum;
@@ -84,9 +56,39 @@ public class Main {
 }
 ```
 
+#### Класс WorkCalculator
+```Java
+package ru.yandex.practicum.work;
+
+public class WorkCalculator {
+    
+    public int workingHours = 8; 
+    String workerName;  
+    private double coefficient; 
+
+    WorkCalculator(String newName) {
+        workerName = newName;
+    }
+
+    private String getWorkerName() {
+        return workerName;
+    }
+
+    int calculate(int workDays) {
+        return workDays * workingHours; 
+    }
+
+    double calculateWithCoefficient(int workDays) {
+        return workDays * workingHours * coefficient;
+    }
+}
+```
+
+
+
 ### Подсказки
 
-* Переменные ```workingHours``` и workerName должны иметь модификатор доступа ```private```.
+* Переменные ```workingHours``` и ```workerName``` должны иметь модификатор доступа ```private```.
 * Для переменной ```coefficient``` и конструктора ```WorkCalculator(String newName)``` нужен доступ ```public```.
 * С модификатором ```private``` не получится получить доступ к методу ```getWorkerName()``` — нужен ```public```.
 * Для успешной компиляции у методов ```calculate()``` и ```calculateWithCoefficient()``` нужно заменить модификатор по умолчанию на ```public```.
@@ -215,7 +217,7 @@ class BedAndBreakfast { // сделайте класс общедоступны�
 
 * Чтобы импортировать классы ```BedAndBreakfast``` и ```Scanner``` нужно ключевое слово ```import``` и имена пакетов: ```ru.yandex.practicum.model``` и ```java.util```.
 * Класс ```BedAndBreakfast```, методы ```book()```, ```free()```, ```isFull()``` должны иметь модификатор ```public```. Переменные ```int capacity``` и ```boolean full```, метод ```printRooms()```, модификатор ```private```.
-* Проверить, есть ли свободные номера в методе ```book()```, нужно с помощью отрицания — !full.
+* Проверить, есть ли свободные номера в методе ```book()```, нужно с помощью отрицания — ```!full```.
 * Количество свободных номеров в методе ```free()``` должно быть строго меньше 10 — ```capacity < 10```.
 * Для увеличения и уменьшения числа номеров в методах используйте инкремент и декремент: ```capacity++``` и ```capacity--```.
 * В ```case 3``` нужно заменить вызов переменной ```hotel.full``` (она стала ```private```) на вызов метода ```hotel.isFull()``` — он теперь ```public```.
