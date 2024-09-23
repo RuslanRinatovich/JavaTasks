@@ -6,7 +6,7 @@
 
 
 ***Критерии оценивания***
-* Оценка 5 - надо сделать все четыре задания.
+* Оценка 5 - надо сделать все пять задания.
 * Оценка 4 - надо сделать любые три задания.
 * Оценка 3 - надо сделать одно любое задание.
 
@@ -500,3 +500,127 @@ class ModelQ extends Texla {
 машина сбрасывает скорость 
 ```speed -= brakingSpeed``` до полной остановки ```speed = 0```.
 * Не забудьте добавить аннотацию ```@Override``` перед переопределяемыми методами.
+
+
+
+# Задание 5
+Перед вами прекод робокиоска “SOUPER-3000”, который специализируется на приготовлении разных супов и бульонов. Вам нужно дополнить его конструкторами. В родительском классе SoupBase реализуйте один конструктор — для создания основы под любой суп. В подклассах создайте по несколько конструкторов.  Один должен принимать все ингредиенты по отдельности, а другие добавлять новые ингредиенты к уже готовому супу или основе. В результате должно быть напечатано восемь разных рецептов — данные для них уже занесены в программу.
+
+
+#### Класс Practicum
+```Java
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println("Готовим основу:");
+        SoupBase soupBase = new SoupBase(2, 5);
+        soupBase.printIngredients();
+
+        System.out.println("\nИз основы приготовим вегетарианский суп и бульон:");
+        Bouillon bouillon = new Bouillon(soupBase, 300);
+        bouillon.printIngredients();
+        VegetarianSoup vegetarianSoup = new VegetarianSoup(soupBase, 200);
+        vegetarianSoup.printIngredients();
+
+        System.out.println("\nПриготовим вегетарианский суп с нуля");
+        VegetarianSoup vegetarianSoupWithoutBase = new VegetarianSoup(1.5, 5, 200);
+        vegetarianSoupWithoutBase.printIngredients();
+
+        System.out.println("\nПриготовим другой бульон для картофельного супа:");
+        Bouillon anotherBouillon = new Bouillon(5, 10, 800);
+        anotherBouillon.printIngredients();
+
+        System.out.println("\nИз этого бульона приготовим суп с картошкой:");
+        PotatoSoup potatoSoup = new PotatoSoup(anotherBouillon, 4, 1);
+        potatoSoup.printIngredients();
+
+        System.out.println("\nСуп с картошкой можно приготовить и из суповой основы:");
+        PotatoSoup potatoSoupFromBase = new PotatoSoup(soupBase, 200, 3, 0);
+        potatoSoupFromBase.printIngredients();
+
+        System.out.println("\nА можно и совсем с нуля:");
+        PotatoSoup totallyNewPotatoSoup = new PotatoSoup(5, 10, 400, 5, 1);
+        totallyNewPotatoSoup.printIngredients();
+    }
+}
+```
+
+#### Класс SoupBase
+```Java
+public class SoupBase {
+    double water;
+    double salt;
+
+    // реализуйте конструктор
+
+    public void printIngredients() {
+        System.out.println("Ингредиенты суповой основы:");
+        System.out.println("Вода: " + water + " л.");
+        System.out.println("Соль: " + salt + " г.");
+    }
+}
+```
+
+#### Класс Bouillon
+```Java
+public class Bouillon extends SoupBase {
+    double meat;
+
+    // реализуйте необходимые конструкторы
+
+    @Override
+    public void printIngredients() {
+        System.out.println("Ингредиенты бульона:");
+        System.out.println("Вода: " + water + " л.");
+        System.out.println("Соль: " + salt + " г.");
+        System.out.println("Мясо: " + meat + " г.");
+    }
+}
+```
+
+#### Класс VegetarianSoup
+```Java
+public class VegetarianSoup extends SoupBase {
+    double vegetables;
+
+    // реализуйте необходимые конструкторы
+
+    @Override
+    public void printIngredients() {
+        System.out.println("Ингредиенты вегетарианского супа:");
+        System.out.println("Вода: " + water + " л.");
+        System.out.println("Соль: " + salt + " г.");
+        System.out.println("Овощи: " + vegetables + " г.");
+    }
+}
+```
+
+#### Класс PotatoSoup
+```Java
+public class PotatoSoup extends Bouillon {
+    double potato;
+    double carrot;
+
+    // реализуйте необходимые конструкторы
+
+    @Override
+    public void printIngredients() {
+        System.out.println("Ингредиенты картофельного супа:");
+        System.out.println("Вода: " + water + " л.");
+        System.out.println("Соль: " + salt + " г.");
+        System.out.println("Мясо: " + meat + " г.");
+        System.out.println("Картошка: " + potato + " шт.");
+        System.out.println("Морковка: " + carrot + " шт.");
+    }
+}
+```
+
+
+### Подсказки
+
+* Формат сигнатуры конструкторов можно найти в инициализации объектов каждого класса.
+* Конструктор ```SoupBase``` должен принимать два параметра: ```double water``` и ```double salt```.
+* Для создания конструкторов в подклассах нужно использовать ключевое слово ```super```.
+* Если в конструктор передаётся объект — например, ```Bouillon bouillon```, 
+то нужно обратиться к его полям через имя и точечную нотацию — ```bouillon.water```, 
+```bouillon.salt```, ```bouillon.meat```.
+* В классе ```PotatoSoup``` должно быть три конструктора.
