@@ -236,61 +236,195 @@ class ModelP {
 
 ### Подсказки
 
-* Классы Train, TexlaTruck и ModelP никак не участвуют в тестовой программе.
-* В классе Transport не может быть полей с модификатором доступа private. Допустимые модификаторы для его полей — public, protected или по умолчанию.
-* Чтобы в классе Automobile сработал конструктор, его необходимо наследовать от Transport. Это также даст возможность унаследовать поля speed, maxSpeed, acceleration и brakingSpeed.
-* Чтобы использовать метод turnTo(String worldSide), класс TexlaCar должен наследоваться от Automobile.
-* Чтобы у экземпляра класса ModelQ появился метод accelerateByAutopilot(), ModelQ должен наследоваться от TexlaCar, а модификатор accelerateByAutopilot() не должен быть private.
+* Классы ```Train```, ```TexlaTruck``` и ```ModelP``` никак не участвуют в тестовой программе.
+* В классе ```Transport``` не может быть полей с модификатором доступа ```private```. Допустимые модификаторы для его полей — ```public```, ```protected``` или по умолчанию.
+* Чтобы в классе ```Automobile``` сработал конструктор, его необходимо наследовать от ```Transport```. Это также даст возможность унаследовать поля ```speed```, ```maxSpeed```, ```acceleration``` и ```brakingSpeed```.
+* Чтобы использовать метод ```turnTo(String worldSide)```, класс ```TexlaCar``` должен наследоваться от ```Automobile```.
+* Чтобы у экземпляра класса ```ModelQ``` появился метод ```accelerateByAutopilot()```, ```ModelQ``` должен наследоваться от ```TexlaCar```, а модификатор ```accelerateByAutopilot()``` не должен быть ```private```.
 
 
 # Задание 3
 
-Вам нужно снять наличные в банкомате, 
-но он сломался и выводит только консоль с недописанным кодом.
-По счастливой случайности — на Java. 
-Допишите код — реализуйте методы в классе ```BankAccount```. 
-Чтобы установить и считать значение суммы денег на счёте
-```moneyAmount```, вам понадобятся get- и set-методы. 
-Чтобы снять деньги со счёта и обнулить его — метод ```withdrawAll()```,
-который должен обнулять счёт и печатать количество выданных денег
-в формате: Со счёта снято 1000 р. 
-Все методы должны иметь самый широкий уровень доступа.
-В результате запуска программы в консоли должно появиться:
+Систему тестирования модели “Q” от “Texla” доработали и убрали лишнее.
+Код теперь запускается, но есть проблема — результаты тестов не совпадают 
+с ожидаемыми. Из-за технического сбоя файл ```Automobile``` оказался недоступен. 
+Вносить изменения в класс Practicum также нельзя. 
+Менять код можно только в файлах ```Texla``` и ```ModelQ```.
+Исправьте код таким образом, чтобы все тесты 
+проходили успешно. Учитывайте, что сейчас метод 
+```accelerateByAutopilot()``` не учитывает максимальную скорость автопилота.
+Добавьте в него условие, чтобы ускорение происходило, 
+только если скорость автомобиля меньше максимальной скорости
+автопилота. Если условие не выполняется, то значит, 
+что скорость равна максимальной. Затем переопределите методы
+```accelerate()``` и  ```brake()```.
+Итоговый вывод в консоли должен быть таким:
  ```
-Количество денег на счету - 1000 р. (сумма может быть любой)
-Со счёта снято 1000 р.
-Количество денег на счету - 0 р.
+Характеристики модели:
+Ускорение: 100.0 км/(ч*с)
+Максимальная скорость: 300.0 км/ч
+
+Начало теста!
+Едем на автопилоте:
+Скорость Q спустя 5с на автопилоте: 55.0 км/ч ✅
+Скорость Q спустя ещё 5с на автопилоте: 60.0 км/ч ✅
+Переходим в ручной режим:
+Скорость Q спустя 2с в ручном режиме: 260.0 км/ч ✅
+Скорость Q спустя ещё 2с в ручном режиме: 300.0 км/ч ✅
+Проверяем торможение:
+Время торможения до полной остановки: 3c ✅
+Скорость Q: 0.0 км/ч ✅ 
  ```
 
 # Заготовка программы
-
+#### Класс Practicum
 ```Java
-public class Practicum {
+class Practicum {
     public static void main(String[] args) {
-        BankAccount bankAccount = new BankAccount();
-        ... // передайте в банкомат сумму на счету
-        System.out.println("Количество денег на счету - " + ... + " р.");
-        ... // вызовите метод вывода средств
-        System.out.println("Количество денег на счету - " + ... + " р.");
+        ModelQ testCar = new ModelQ();
+
+        System.out.println("Характеристики модели:");
+        System.out.println("Ускорение: " + testCar.acceleration + " км/(ч*с)");
+        System.out.println("Максимальная скорость: " + testCar.maxSpeed + " км/ч");
+
+        System.out.println("\nНачало теста!");
+
+        System.out.println("Едем на автопилоте:");
+        for (int second = 0; second < 5; second++) {
+            testCar.accelerateByAutopilot();
+        }
+        System.out.print("Скорость Q спустя 5с на автопилоте: " + testCar.speed + " км/ч");
+        checkResult(55.0, testCar.speed);
+
+        for (int second = 0; second < 5; second++) {
+            testCar.accelerateByAutopilot();
+        }
+        System.out.print("Скорость Q спустя ещё 5с на автопилоте: " + testCar.speed + " км/ч");
+        checkResult(60.0, testCar.speed);
+
+
+        System.out.println("Переходим в ручной режим:");
+        for (int second = 0; second < 2; second++) {
+            testCar.accelerate();
+        }
+        System.out.print("Скорость Q спустя 2с в ручном режиме: " + testCar.speed + " км/ч");
+        checkResult(260.0, testCar.speed);
+
+        for (int second = 0; second < 2; second++) {
+            testCar.accelerate();
+        }
+        System.out.print("Скорость Q спустя ещё 2с в ручном режиме: " + testCar.speed + " км/ч");
+        checkResult(300.0, testCar.speed);
+
+
+        System.out.println("Проверяем торможение:");
+        int brakingTime = 0;
+        while (testCar.speed > 0) {
+            testCar.brake();
+            brakingTime++;
+        }
+        System.out.print("Время торможения до полной остановки: " + brakingTime + "c");
+        checkResult(3, brakingTime);
+        System.out.print("Скорость Q: " + testCar.speed + " км/ч");
+        checkResult(0.0, testCar.speed);
+    }
+
+    private static void checkResult(double expect, double actual) {
+        if (expect == actual) {
+            System.out.println(" ✅");
+        } else {
+            System.out.println(" ❌");
+        }
+    }
+
+    private static void checkResult(int expect, int actual) {
+        if (expect == actual) {
+            System.out.println(" ✅");
+        } else {
+            System.out.println(" ❌");
+        }
     }
 }
+```
 
-class BankAccount {
-    private long moneyAmount;
+#### Класс Automobile
+```Java
+// данный класс недоступен для изменений
+class Automobile {
+    protected double speed;
+    protected double maxSpeed;
+    protected double acceleration;
+    protected double brakingSpeed;
 
-    // допишите код методов
-    // используйте параметр newMoneyAmount для установки нового значения
+
+    public Automobile() {
+        acceleration = 30;
+        brakingSpeed = 120;
+    }
+
+    public void accelerate() {
+        if (speed < maxSpeed) {
+            speed += acceleration;
+        }
+    }
+
+    public void brake() {
+        if (speed > 0) {
+            speed -= brakingSpeed;
+        }
+    }
 }
 ```
+
+#### Класс Texla
+```Java
+class Texla extends Automobile {
+    protected double autoPilotMaxSpeed;
+    protected double autoPilotAcceleration;
+
+    public Texla() {
+        autoPilotMaxSpeed = 60;
+        autoPilotAcceleration = 11;
+    }
+
+    public void accelerateByAutopilot() {
+        speed += autoPilotAcceleration;
+        // исправьте метод для ускорения при автопилоте
+    }
+
+    // переопределите метод для ускорения
+
+    // переопределите метод для торможения
+}
+```
+
+#### Класс ModelQ
+```Java
+class ModelQ extends Texla {
+
+    public ModelQ() {
+        // переопределите необходимые поля
+        speed = 0;
+    }
+}
+```
+
 ### Подсказки
 
-* Метод ```getMoneyAmount()``` должен возвращать значение 
-переменной ```moneyAmount```. 
-Тип возвращаемого значение будет совпадать с типом переменной.
-* Метод ```setMoneyAmount()``` должен принимать
-в качестве аргумента значение суммы на
-счету ```newMoneyAmount``` и сохранять его в поле ```moneyAmount```.
-* Передать в ```moneyAmount``` сумму (например, 1000) 
-нужно через вызов метода ```setMoneyAmount(1000)``` в классе ```Practicum```.
-* Получить значение ```moneyAmount``` до и после 
-обнуления нужно через вызов метода ```getMoneyAmount()```.
+* Максимальная скорость в ручном режиме — 300 км/ч, значит,
+необходимо в конструкторе ```ModelQ``` установить в ```maxSpeed``` значение 300.
+* После поездки на автопилоте скорость
+автомобиля должна быть 60 км/ч, а после 2 секунд в ручном
+режиме должна стать 260 км/ч. 
+Значит, в конструкторе ```ModelQ``` нужно установить в ```acceleration``` значение 100.
+* Ускорение на автопилоте происходит, 
+только если скорость автомобиля меньше максимальной 
+скорости ```if (speed < autoPilotMaxSpeed) {speed += autoPilotAcceleration;}```
+, в обратном случае ```else {speed = autoPilotMaxSpeed;}```.
+* При ускорении: если скорость меньше максимальной ```if (speed < maxSpeed)```,
+машина разгоняется ```speed += acceleration```, пока не достигнет 
+максимума ```speed = maxSpeed```.
+* При торможении: если скорость больше нуля ```if (speed > 0)```, 
+машина сбрасывает скорость 
+```speed -= brakingSpeed``` до полной остановки ```speed = 0```.
+* Не забудьте добавить аннотацию ```@Override``` перед переопределяемыми методами.
