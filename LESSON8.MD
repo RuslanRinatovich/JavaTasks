@@ -435,6 +435,8 @@ private ArrayList<MountainHare> hares;
 
 <summary>Модификатор final</summary>
 
+# Модификатор final
+
 Одни элементы кода могут обновлять свои значения — например, обычные и ```static```-переменные,
 а другие должны оставаться неизменными. Для всего, что в программе менять нельзя, 
 есть модификатор ```final``` (англ. «окончательный»).
@@ -446,6 +448,7 @@ private ArrayList<MountainHare> hares;
 её положение нужно записать в `final`-переменную.
 
 ### Переменная с модификатором `final`
+
 Если при объявлении переменной добавить модификатор `final`,
 то после инициализации её значение станет окончательным — изменить его будет нельзя. Например:
 
@@ -483,6 +486,7 @@ submission/Practicum.java:5: error: cannot assign a value to final variable figu
 
 Запустите программу и посмотрите, как меняется состояние объекта,
 на который ссылается `final`-переменная `incomeBook` (от англ. «книга доходов»):
+
 ```java
 import java.util.ArrayList;
 import java.util.List;
@@ -515,8 +519,10 @@ public class Practicum {
 }
 
 ```
+
 Попробуем переменной `incomeBook` после её инициализации присвоить другой объект.
-Например, добавим строку: `incomeBook` = new ArrayList<>();.
+Например, добавим строку: `incomeBook = new ArrayList<>();`.
+
 ```java
 import java.util.ArrayList;
 import java.util.List;
