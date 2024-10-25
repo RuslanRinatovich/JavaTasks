@@ -983,6 +983,11 @@ public class MortgageRequest {
     }
 }
 ```
+</details>
+
+<details>
+
+<summary>Дженерики и наследование</summary>
 
 # Дженерики и наследование
 
@@ -1649,7 +1654,7 @@ class HardQuestion implements SmartPrintable {
 
 <details>
 
-<summary></summary>
+<summary>Задание 3</summary>
 
 # Задание 3
 
