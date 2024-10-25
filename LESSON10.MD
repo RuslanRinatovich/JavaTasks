@@ -691,6 +691,247 @@ class Pair<T1, T2> {
     }
 }
 ```
+![img_20.png](img_20.png)
+
+## Дженерики и стандартные коллекции
+
+Все коллекции в стандартной библиотеке Java используют дженерики.
+Ранее вы уже работали с ними — например, при использовании коллекции `ArrayList` вы указывали тип элементов, которые будут в нём храниться. Какой бы конкретный тип для списка вы ни указали, его поведение не изменится. Методам добавления или удаления элемента из списка всё равно, что удалять — экземпляр строки или целого числа.
+Эти операции работают совершенно одинаково для любого типа.
+
+```java
+ArrayList<String> listOfStrings = new ArrayList<>();
+listOfStrings.add("Привет"); // добавить строку в список строк ArrayList<String> 
+
+ArrayList<Integer> listOfIntegers = new ArrayList<>();
+listOfIntegers.add(1); // добавить целое число в список целых чисел
+```
+```java
+
+ArrayList<String> listOfStrings = new ArrayList<>();
+ArrayList<Integer> listOfIntegers = new ArrayList<>();
+
+listOfStrings.add("Привет"); // строку в список строк добавить можно
+// listOfStrings.add(1); // а вот целое число нельзя — будет ошибка
+
+listOfIntegers.add(1); // число можно добавить в список чисел
+// listOfIntegers.add("Как дела?"); // строку в список чисел добавить не получится
+```
+
+Разные коллекции могут принимать разное количество параметров типа. 
+Это зависит от того, сколько значений может хранить один элемент коллекции.
+Например, в списках в одном элементе коллекции хранится только одно значение заданного типа: `String`, `Integer` или другое.
+
+Хеш-таблицы в качестве одного элемента коллекции хранят пару «ключ-значение»,
+поэтому принимают сразу два параметра типа: для типа ключа таблицы и её значения. 
+Поэтому при создании экземпляра хеш-таблицы в угловых скобках нужно указывать сразу два типа:
+
+```java
+import java.util.HashMap;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        HashMap<String, Double> catsWithWeight = new HashMap<>();
+        catsWithWeight.put("Пиксель", 4.6);
+        catsWithWeight.put("Космонавт", 5.0);
+        catsWithWeight.put("Потата", 3.2);
+        catsWithWeight.put("Байтик", 2.4);
+
+        for (String cat : catsWithWeight.keySet()) {
+            System.out.printf("Котик %s весит %f",cat, catsWithWeight.get(cat));
+            System.out.println();
+        }
+    }
+
+}
+```
+
+![img_21.png](img_21.png)
+
+## Создание коллекций без указания параметра типа
+
+Синтаксически Java допускает не указывать значение параметра типа при создании объекта.
+Например, можно создать ArrayList общего вида:
+
+```java
+ArrayList someList = new ArrayList();
+```
+
+Такой список будет иметь тип элементов Object, 
+а логика его работы будет аналогична варианту с использованием полиморфизма подтипов.
+Такой вариант существует в Java с целью сохранения обратной совместимости: чтобы программы, 
+написанные до появления дженериков, продолжали корректно работать. 
+Однако использовать такой синтаксис крайне не рекомендуется — вы потеряете все преимущества от механизма дженериков.
+
+</details>
+
+<details>
+
+<summary>Задание 2</summary>
+
+# Задание 2
+Ваша команда разрабатывает приложение, которое помогает пользователю заполнить заявку на ипотеку.
+Пользователь вводит данные для покупки квартиры: фамилию, имя и отчество, возраст, 
+сумму ипотеки и указывает свой статус по трудоустройству.
+Задача вашего приложения — проверить данные, которые заполнил пользователь,
+и показать предварительный ответ банка.
+
+Вам необходимо написать валидацию данных пользователя, используя типизированные классы. 
+Ипотека может быть выдана только людям 18 лет и старше, 
+минимальная сумма ипотеки — 1 000 000, 
+а максимальная — 10 000 000, 
+человек обязательно должен быть трудоустроенным.
+
+`Practicum`
+```java
+
+import java.util.Scanner;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Заполните данные для ипотечной заявки и узнайте статус одобрения");
+        System.out.println("Введите ФИО:");
+        String name = scanner.nextLine();
+
+        System.out.println("Ваш возраст:");
+        byte age = scanner.nextByte();
+
+        System.out.println("Планируемая сумма ипотеки:");
+        int mortgageAmount = scanner.nextInt();
+
+        scanner.nextLine();
+        System.out.println("Трудоустроены ли вы сейчас? (д/н)");
+        String employedString = scanner.nextLine();
+        boolean employed = employedString.equalsIgnoreCase("д");
+
+        MortgageRequest mortgageRequest = new MortgageRequest(name, age, mortgageAmount, employed);
+        mortgageRequest.validate();
+
+    }
+
+}
+```
+
+`ValidationRule`
+```java
+// Дополните базовый класс для всех правил валидации
+public abstract class ValidationRule {
+    protected final ... value;
+    private final String errorMessage;
+
+    protected ValidationRule(... value, String errorMessage) {
+        this.value = value;
+        this.errorMessage = errorMessage;
+    }
+
+    public abstract boolean isValid();
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+}
+```
+`AgeValidationRule`
+
+```java
+// Дополните класс для проверки возраста пользователя
+public class AgeValidationRule ... {
+
+    public AgeValidationRule(Byte age) {
+        super(age, "Возраст для подачи на ипотеку должен быть старше 18 лет");
+    }
+
+    @Override
+    public boolean isValid() {
+        return value >= 18;
+    }
+
+}
+```
+`EmploymentValidationRule`
+```java
+// Дополните класс для проверки трудоустроенности пользователя
+public class EmploymentValidationRule ... {
+
+    public EmploymentValidationRule(Boolean value) {
+        super(value, "Ипотека выдается только трудоустроенным");
+    }
+
+    @Override
+    public boolean isValid() {
+        return value;
+    }
+}
+```
+`MortgageAmountValidationRule`
+
+```java
+
+// Дополните класс для проверки суммы ипотеки пользователя
+public class MortgageAmountValidationRule ... {
+
+    public MortgageAmountValidationRule(Integer value) {
+        super(value, "Минимальный размер ипотеки - 1.000.000, а максимальный - 10.000.000");
+    }
+
+    // Объявите и реализуйте метод для проверки суммы ипотеки ниже
+    ...
+
+}
+```
+`MortgageRequest`
+```java
+public class MortgageRequest {
+
+    private final String name;
+    private final byte age;
+    private final int amount;
+    private final boolean employed;
+
+    public MortgageRequest(String name, byte age, int amount, boolean employed) {
+        this.name = name;
+        this.age = age;
+        this.amount = amount;
+        this.employed = employed;
+    }
+
+    public void validate() {
+        System.out.println("Проверка заявки...");
+
+        boolean result = true;
+
+        AgeValidationRule ageValidationRule = new AgeValidationRule(age);
+        if (!ageValidationRule.isValid()) {
+            result = false;
+            System.out.println(ageValidationRule.getErrorMessage());
+        }
+
+        MortgageAmountValidationRule amountValidationRule = new MortgageAmountValidationRule(amount);
+        if (!amountValidationRule.isValid()) {
+            result = false;
+            System.out.println(amountValidationRule.getErrorMessage());
+        }
+
+        EmploymentValidationRule employmentValidationRule = new EmploymentValidationRule(employed);
+        if (!employmentValidationRule.isValid()) {
+            result = false;
+            System.out.println(employmentValidationRule.getErrorMessage());
+        }
+
+        if (result) {
+            System.out.println(name + ", вам одобрена заявка на ипотеку!");
+        } else {
+            System.out.println(name + ", ваша заявка отклонена");
+        }
+    }
+}
+```
+
+
 
 
 
