@@ -436,8 +436,219 @@ public class DiscountCalculatorTest {
 необязательная строка, которая выведется, если фактический результат не равен ожидаемому, другими словами, если тест обнаружит ошибку.
 
 
+</details>
+
+<details>
+
+<summary>Задание 1</summary>
+
+# Задание 1
+[Оглавление](#оглавление)
+
+На текущий момент класс `DiscountCalculatorTest` покрывает только один тест-кейс из пяти. 
+Составьте ещё четыре теста, чтобы обеспечить полное покрытие класса `DiscountCalculator`. 
+Вам нужно покрыть все тест-кейсы из списка:
+* Если покупка на сумму 1–999 рублей, то скидка составляет 0%.
+  * 1.1. Совершить покупку на 1 рубль. Ожидаемое поведение: стоимость покупки составляет 1 рубль.
+  * 1.2. Совершить покупку на 333 рубля. Ожидаемое поведение: стоимость покупки составляет 333 рубля.
+  * 1.3. Совершить покупку на 999 рублей. Ожидаемое поведение: стоимость покупки составляет 999 рублей.
+
+* Иначе скидка составляет 2%.
+  * 2.1. Совершить покупку на 1000 рублей. Ожидаемое поведение: стоимость покупки составляет 980 рублей (-2%).
+  * 2.2. Совершить покупку на 2000 рублей. Ожидаемое поведение: стоимость покупки составляет 1960 рублей (-2%).
+
+Наименование тестовых методов уже представлено в классе DiscountCalculatorTest.
+
+
+```java
+public class DiscountCalculator {
+
+    public int sumAfterDiscount(int sum) {
+        if (sum < 1000) {
+            return sum;
+        } else {
+            return (int) (sum * 0.98);
+        }
+    }
+}
+```
+
+```java
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class DiscountCalculatorTest {
+
+    DiscountCalculator discountCalculator = new DiscountCalculator();
+
+    @Test
+    public void shouldGiveNoDiscountForValue999() {
+        // Подготовка
+        int buySum = 999;
+        int expectedSum = 999;
+
+        // Исполнение
+        int resultSum = discountCalculator.sumAfterDiscount(buySum);
+
+        // Проверка
+        Assertions.assertEquals(expectedSum, resultSum);
+    }
+
+    @Test
+    public void shouldGiveNoDiscountForValue1() {
+    }
+
+    @Test
+    public void shouldGiveNoDiscountForValue333() {
+    }
+
+    @Test
+    public void shouldGive2PercentDiscountForValue1000() {
+    }
+
+    @Test
+    public void shouldGive2PercentDiscountForValue2000() {
+    }
+}
+
+```
 
 </details>
+
+<details>
+
+<summary>JUnit. Методы</summary>
+
+# JUnit. Методы
+
+JUnit, как и многие другие библиотеки, предоставляет множество инструментов для упрощения стандартных операций. В этом уроке вы изучите основные методы фреймворка, которые позволяют программисту не только быстро проверять свои программы, но и легко ориентироваться в тестах, написанных другими разработчиками.
+
+## Методы `Assertions.assertNull(...)` и `Assertions.assertNotNull(...)`
+
+Проверить, что значение переменной равно `null`, можно с помощью метода `assertEquals(Object object)`:
+
+```java
+@Test
+public void shouldBeNull() {
+    String nullString = null;
+    Assertions.assertEquals(null, nullString);
+}
+```
+
+А если нужно удостовериться, что значение не равно `null`, 
+понадобится метод `assertNotEquals(Object object)`:
+
+```java
+@Test
+public void shouldNotBeNull() {
+    String apple = "apple";
+    Assertions.assertNotEquals(null, apple);
+}
+```
+
+Оба теста работают корректно. 
+Но если проверку на null вам нужно выполнять часто,
+то писать каждый раз `Assertions.assertEquals(null, value)` будет излишеством. 
+
+Лучше воспользоваться более удобными методами `Assertions.assertNull(Object object)` 
+и `Assertions.assertNotNull(Object object)`.
+
+```java
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+public class NullabilityTest {
+
+    @Test
+    public void shouldBeNull() {
+        String nullString = null;
+        assertNull(nullString);
+    }
+
+    @Test
+    public void shouldNotBeNull() {
+        String apple = "apple";
+        assertNotNull(apple);
+    }
+}
+
+```
+
+> Обратите внимание на использование `import static` в примере выше. 
+> Методы класса `Assertions` часто импортируют как статические методы, 
+> чтобы сократить запись. Это удобно, потому что в одном классе 
+> может быть много тестов, и каждый из них будет вызывать какой-то 
+> из методов проверки класса `Assertions`. В результате вместо такой записи:
+
+```java
+Assertions.assertNull(firstString);
+Assertions.assertNotNull(secondString);
+Assertions.assertEquals(expected, actual);
+```
+
+Будет такая
+
+```java
+*assertNull*(firstString);
+*assertNotNull*(secondString);
+*assertEquals*(expected, actual);
+```
+
+Вы также можете импортировать все методы сразу через
+
+```java
+  import static org.junit.jupiter.api.Assertions.*.
+```
+
+## Методы `assertTrue(...)` и `assertFalse(...)`
+
+Аналогичные методы существуют для проверки значений типа boolean. 
+Вы можете использовать assertEquals(true, value) 
+или assertEquals(false, value), но удобнее будет делать это с 
+помощью специальных методов `assertTrue(value)` и `assertFalse(value).`
+
+```java
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class BooleanTest {
+
+    @Test
+    public void shouldBeTrue() {
+        boolean value = true;
+        assertTrue(value);
+    }
+
+    @Test
+    public void shouldBeFalse() {
+        boolean value = false;
+        Assertions.assertFalse(value);
+    }
+}
+
+```
+
+> При сравнении значений через assertEquals() используется метод equals(..) 
+> из класса Object. Поэтому для того, чтобы операция была выполнена корректно, в классах объектов этот метод должен быть корректно переопределён. 
+> В противном случае сравнение будет работать неправильно.
+
+> Есть ещё одна важная особенность, связанная с методом equals(..).
+> Его нельзя переопределить для массивов. Другими словами, два массива с одинаковым содержанием (одинаковыми элементами, расположенными в том же порядке) — это разные объекты с точки зрения Java.
+> Поэтому метод equals(..) всегда будет возвращать false для таких массивов, 
+> а тест с assertEquals(...) не будет проходить.
+
+ 
+> Для поэлементного сравнения массивов можно воспользоваться методом 
+> Arrays.equals(...), а в JUnit можно использовать метод класса 
+> `**Assertions — assertArrayEquals(...)**`. 
+
+</details>
+
 
 Предыдущее занятие | &nbsp; | Следующее занятие
 :----------------:|:----------:|:----------------:
