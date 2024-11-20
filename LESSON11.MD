@@ -279,12 +279,163 @@
 3. В окне `Download Library from Maven Repository` в поле поиска введите `org.junit.jupiter` и нажмите на кнопку поиска  
 ![img_10.png](img_10.png)
 
-4. Дождитесь пока Idea подключится к центральному репоозиторию Maven и подгрузит информацию о доступных к скачиванию версиях библиотек Junit. Выберите из выпадающего списка подходящую версию библиотеки.
+4. Дождитесь пока Idea подключится к центральному репозиторию Maven и подгрузит информацию о доступных к скачиванию версиях библиотек Junit. Выберите из выпадающего списка подходящую версию библиотеки.
 
 ![img_11.png](img_11.png)
 
-5. 
+5. Выберите подходящую версию и нажмите `OK`.
+
+![img_13.png](img_13.png)
+
 ![img_12.png](img_12.png)
+
+6. В окне **Choose Mosules** оставьте все без изменений и нажмите **OK**.
+
+![img_14.png](img_14.png)
+
+7. Если все выполнится успешно то библиотека подключится к проекту. Нажмите кнопку `Aplly` и затем `OK`.
+
+![img_15.png](img_15.png)
+
+#### Создание кода
+
+
+1. Нажмите правой кнопкой по папке src. Далее в контекстном меню выберите `New\Java Class`.
+![img_16.png](img_16.png)
+
+2. Введите название класса `DiscountCalculator` и нажмите `Enter`
+
+![img_17.png](img_17.png)
+
+Замените код класса на следующий
+
+```java
+public class DiscountCalculator {
+
+    public int sumAfterDiscount(int sum) {
+        if (sum < 1000) {
+            return sum;
+        } else {
+            return (int) (sum * 0.98);
+        }
+    }
+}
+
+```
+3. Нажмите правой кнопкой мыши по названию проекта, далее выберите пункт **New\Directory**.
+
+![img_20.png](img_20.png)
+
+4. Введите название `test` и нажмите кнопку `Enter`
+
+![img_21.png](img_21.png)
+
+5. Нажмите правой кнопкой мыши по папке test далее в контекстном меню выберите пункт `Mark Directory as\Test Sources Root`
+
+![img_22.png](img_22.png)
+
+6. Откройте файл `DiscountCalculator.java` и установите курсор на название класса `DiscountCalculator`. 
+Нажмите правую кнопку мыши и в контекстном меню выберите пункт `Generate...`
+
+![img_18.png](img_18.png)
+
+7. В следующем окошке выберите пункт `Test...`
+
+![img_19.png](img_19.png)
+
+8. В окне **Create Test** поставьте галочку возле названия метода `sumAfterDiscount`. 
+Обратите внимание на название создаваемого класса в поле `Class name`. 
+Как правило, класс с тестами называют так же, как базовый класс, добавляя в конце слово `“Test”`. 
+В нашем случае получится DiscountCalculatorTest.  Нажмите `ОК`.
+
+![img_23.png](img_23.png)
+
+9. Если все правильно сделано, то должна открыться новая вкладка с кодом класса `DiscountCalculatorTest`
+
+![img_24.png](img_24.png)
+
+
+10. Замените код класса `DiscountCalculatorTest` на следующий.
+
+```java
+// Заметьте, что классы фреймворка импортируются из пакетов 
+// отличных от пакетов стандартной библиотеки Java
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class DiscountCalculatorTest {
+
+    DiscountCalculator discountCalculator = new DiscountCalculator();
+
+    @Test
+    public void shouldGiveNoDiscountForValue999() {
+        // Подготовка
+        int buySum = 999;
+        int expectedSum = 500;
+
+        // Исполнение
+        int resultSum = discountCalculator.sumAfterDiscount(buySum);
+
+        // Проверка
+        Assertions.assertEquals(expectedSum, resultSum);
+    }
+}
+```
+
+11. Осталось проверить работу тестовых методов.
+ * Для запуска одного тестового метода достаточно нажать на кнопку ![img_25.png](img_25.png) слева от сигнатуры тестового метода.
+ * Для запуска всех тестов тестового класса надо нажать на кнопку ![img_27.png](img_27.png) слева от названия класса.
+
+![img_26.png](img_26.png)
+
+12. Нажмите на кнопку ![img_27.png](img_27.png) и в выпадающем меню выберите **Run**.
+
+![img_28.png](img_28.png)
+
+13. Произойдет построение теста. На данный момент у нас только один тестовый метод. Ожидаемый(expectedSum) и фактический(resultSum) 
+результаты не совпали, следовательно, статус нашего теста будет - `Test failed`(тест не пройден)
+В коде теста мы специально написали, что для товара стоимостью 999 мы ожидаем получить итоговую сумму 500, хотя в реальности исходя из нашего примера должны получить 999. 
+
+![img_29.png](img_29.png)
+
+14. Исправьте значение переменной expectedSum = 999. Снова выполните тесты.
+
+```java
+import org.junit.jupiter.api.Test;
+
+public class DiscountCalculatorTest {
+
+    DiscountCalculator discountCalculator = new DiscountCalculator();
+
+    @Test
+    public void shouldGiveNoDiscountForValue999() {
+        // Подготовка
+        int buySum = 999;
+        int expectedSum = 999;
+
+        // Исполнение
+        int resultSum = discountCalculator.sumAfterDiscount(buySum);
+
+        // Проверка
+        Assertions.assertEquals(expectedSum, resultSum);
+    }
+}
+```
+
+15. На этот раз Ожидаемый(expectedSum) и фактический(resultSum)
+результаты совпали, следовательно, статус нашего теста будет - `Test passed`(тест пройден)
+
+![img_30.png](img_30.png)
+
+### Метод assertEquals(...)
+
+Метод `assertEquals(...)`
+Ещё один элемент `JUnit` — это множество статических методов класса `Assertions`. 
+Один из них, `assertEquals(Object expected, Object actual, [String message])` вы уже встречали его выше примерах. 
+Он принимает 2 или 3 аргумента. Первый — это ожидаемый результат, второй — фактический. Третий аргумент —
+необязательная строка, которая выведется, если фактический результат не равен ожидаемому, другими словами, если тест обнаружит ошибку.
+
+
 
 </details>
 
