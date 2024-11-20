@@ -1,6 +1,6 @@
 Предыдущее занятие |         &nbsp;          | Следующее занятие
 :----------------:|:-----------------------:|:----------------:
-[Урок 9](LESSON9.MD) | [Содержание](README.MD) | [Урок 12](LESSON11.md)
+[Урок 10](LESSON10.MD) | [Содержание](README.MD) | [Урок 12](LESSON11.md)
 
 # Урок 11. Unit-тесты
 
@@ -16,13 +16,6 @@
 * Оценка 3 - надо сделать одно любое задание.
 
 # Оглавление
-
-1. [Введение в тему](#введение-в-тему)
-2. [Задачи тестирования](#задачи-тестирования)
-   * [Требования к программе и сценарии тестирования](#требования-к-программе-и-сценарии-тестирования)
-   * [Как проверять требования](#как-проверять-требования)
-   * [Пример тестирования](#пример-тестирования)
-
 
 <details>
 <summary>Введение в тему</summary>
@@ -77,7 +70,7 @@
 (англ. _functional requirements_), то есть делает то, что от неё ожидает пользователь. 
 Например, что при включении умного чайника вода нагревается, а не превращается в лёд.
 
-![img.png](img.png)
+![img.png](L11/img.png)
 
 ## Требования к программе и сценарии тестирования
 
@@ -140,7 +133,7 @@
 Получив тест-кейсы, можно создать и провести **тесты**, 
 то есть автоматические или ручные операции по проверке тест-кейсов.
 
-![img_1.png](img_1.png)
+![img_1.png](L11/img_1.png)
 
 ## Пример тестирования
 
@@ -157,7 +150,7 @@
 1. Если сумма покупки находится в диапазоне от `1` до `999` рублей, то скидка будет `0%`.
 2. Иначе скидка составит `2%`.
 
-![img_2.png](img_2.png)
+![img_2.png](L11/img_2.png)
 
 Теперь составим тест-кейсы. 
 Поскольку у нас есть пронумерованный набор требований, 
@@ -171,7 +164,7 @@
 - 2.1. Совершается покупка на 1000 рублей. Ожидаемое поведение: стоимость покупки составляет 980 рублей (−2%).
 - 2.2. Совершается покупка на 2000 рублей. Ожидаемое поведение: стоимость покупки составляет 1960 рублей (−2%).
 
-![img_3.png](img_3.png)
+![img_3.png](L11/img_3.png)
 
 Тест-кейсы 1.1, 1.3 и 2.1. проверяют значения на границах интервалов [1;1000) и [1000;+∞).
 Такие значения называются **граничными** (англ. _boundary values_), мы расскажем о них подробнее в следующих уроках. 
@@ -232,7 +225,7 @@
 Фреймворк отличается от обычной библиотеки тем, что код библиотеки вы запускаете из вашего кода, 
 в то время как фреймворк наоборот может использовать ваш код в своей работе.
 
-![img_4.png](img_4.png)
+![img_4.png](L11/img_4.png)
 
 Один из самых популярных фреймворков для тестирования на Java — **JUnit**. 
 Чтобы написать первый тест с помощью **JUnit**, нужно сделать всего два шага:
@@ -251,18 +244,18 @@
 
 1. Запустите IntelliJ IDEA.
 2. Выберите слева вкладку **Projects**  и нажмите на кнопку **New Project**.
-   ![img.png](img6.png)
+   ![img.png](L11/img6.png)
 
 3. Дайте имя проекту **debug-app**.
    Language - **Java**, Build system - **IntelliJ**.
    В качестве JDK используйте Amazon Coretto 22. Нажмите **Create**.
-   ![img_1.png](img7.png)
+   ![img_1.png](L11/img7.png)
 4. Если все настройки пройдены успешно появится окно с вашим проектом.
-   ![img_2.png](img8.png)
+   ![img_2.png](L11/img8.png)
 5. Запустите свой проект. Нажмите правой кнопкой мыши в любом месте файла Main.java и в контекстном меню выберите `Run`
-![img_5.png](img_5.png)
+![img_5.png](L11/img_5.png)
 
-![img_6.png](img_6.png)
+![img_6.png](L11/img_6.png)
 
 Проект успешно создан.
 
@@ -270,42 +263,42 @@
 
 1. В меню File выберите пункт ProjectStructure
 
-![img_7.png](img_7.png)
+![img_7.png](L11/img_7.png)
 
 2. В окне Project Structure выберите вкладку **Libraries** и нажмите на кнопку `+`\`From Maven...`
 
-   ![img_9.png](img_9.png)
+   ![img_9.png](L11/img_9.png)
 
 3. В окне `Download Library from Maven Repository` в поле поиска введите `org.junit.jupiter` и нажмите на кнопку поиска  
-![img_10.png](img_10.png)
+![img_10.png](L11/img_10.png)
 
 4. Дождитесь пока Idea подключится к центральному репозиторию Maven и подгрузит информацию о доступных к скачиванию версиях библиотек Junit. Выберите из выпадающего списка подходящую версию библиотеки.
 
-![img_11.png](img_11.png)
+![img_11.png](L11/img_11.png)
 
 5. Выберите подходящую версию и нажмите `OK`.
 
-![img_13.png](img_13.png)
+![img_13.png](L11/img_13.png)
 
-![img_12.png](img_12.png)
+![img_12.png](L11/img_12.png)
 
 6. В окне **Choose Mosules** оставьте все без изменений и нажмите **OK**.
 
-![img_14.png](img_14.png)
+![img_14.png](L11/img_14.png)
 
 7. Если все выполнится успешно то библиотека подключится к проекту. Нажмите кнопку `Aplly` и затем `OK`.
 
-![img_15.png](img_15.png)
+![img_15.png](L11/img_15.png)
 
 #### Создание кода
 
 
 1. Нажмите правой кнопкой по папке src. Далее в контекстном меню выберите `New\Java Class`.
-![img_16.png](img_16.png)
+![img_16.png](L11/img_16.png)
 
 2. Введите название класса `DiscountCalculator` и нажмите `Enter`
 
-![img_17.png](img_17.png)
+![img_17.png](L11/img_17.png)
 
 Замените код класса на следующий
 
@@ -324,35 +317,35 @@ public class DiscountCalculator {
 ```
 3. Нажмите правой кнопкой мыши по названию проекта, далее выберите пункт **New\Directory**.
 
-![img_20.png](img_20.png)
+![img_20.png](L11/img_20.png)
 
 4. Введите название `test` и нажмите кнопку `Enter`
 
-![img_21.png](img_21.png)
+![img_21.png](L11/img_21.png)
 
 5. Нажмите правой кнопкой мыши по папке test далее в контекстном меню выберите пункт `Mark Directory as\Test Sources Root`
 
-![img_22.png](img_22.png)
+![img_22.png](L11/img_22.png)
 
 6. Откройте файл `DiscountCalculator.java` и установите курсор на название класса `DiscountCalculator`. 
 Нажмите правую кнопку мыши и в контекстном меню выберите пункт `Generate...`
 
-![img_18.png](img_18.png)
+![img_18.png](L11/img_18.png)
 
 7. В следующем окошке выберите пункт `Test...`
 
-![img_19.png](img_19.png)
+![img_19.png](L11/img_19.png)
 
 8. В окне **Create Test** поставьте галочку возле названия метода `sumAfterDiscount`. 
 Обратите внимание на название создаваемого класса в поле `Class name`. 
 Как правило, класс с тестами называют так же, как базовый класс, добавляя в конце слово `“Test”`. 
 В нашем случае получится DiscountCalculatorTest.  Нажмите `ОК`.
 
-![img_23.png](img_23.png)
+![img_23.png](L11/img_23.png)
 
 9. Если все правильно сделано, то должна открыться новая вкладка с кодом класса `DiscountCalculatorTest`
 
-![img_24.png](img_24.png)
+![img_24.png](L11/img_24.png)
 
 
 10. Замените код класса `DiscountCalculatorTest` на следующий.
@@ -383,20 +376,20 @@ public class DiscountCalculatorTest {
 ```
 
 11. Осталось проверить работу тестовых методов.
- * Для запуска одного тестового метода достаточно нажать на кнопку ![img_25.png](img_25.png) слева от сигнатуры тестового метода.
- * Для запуска всех тестов тестового класса надо нажать на кнопку ![img_27.png](img_27.png) слева от названия класса.
+ * Для запуска одного тестового метода достаточно нажать на кнопку ![img_25.png](L11/img_25.png) слева от сигнатуры тестового метода.
+ * Для запуска всех тестов тестового класса надо нажать на кнопку ![img_27.png](L11/img_27.png) слева от названия класса.
 
-![img_26.png](img_26.png)
+![img_26.png](L11/img_26.png)
 
-12. Нажмите на кнопку ![img_27.png](img_27.png) и в выпадающем меню выберите **Run**.
+12. Нажмите на кнопку ![img_27.png](L11/img_27.png) и в выпадающем меню выберите **Run**.
 
-![img_28.png](img_28.png)
+![img_28.png](L11/img_28.png)
 
 13. Произойдет построение теста. На данный момент у нас только один тестовый метод. Ожидаемый(expectedSum) и фактический(resultSum) 
 результаты не совпали, следовательно, статус нашего теста будет - `Test failed`(тест не пройден)
 В коде теста мы специально написали, что для товара стоимостью 999 мы ожидаем получить итоговую сумму 500, хотя в реальности исходя из нашего примера должны получить 999. 
 
-![img_29.png](img_29.png)
+![img_29.png](L11/img_29.png)
 
 14. Исправьте значение переменной expectedSum = 999. Снова выполните тесты.
 
@@ -425,7 +418,7 @@ public class DiscountCalculatorTest {
 15. На этот раз Ожидаемый(expectedSum) и фактический(resultSum)
 результаты совпали, следовательно, статус нашего теста будет - `Test passed`(тест пройден)
 
-![img_30.png](img_30.png)
+![img_30.png](L11/img_30.png)
 
 ### Метод assertEquals(...)
 
@@ -649,6 +642,113 @@ public class BooleanTest {
 
 </details>
 
+
+<details>
+
+<summary>Задание 2</summary>
+
+Ваш коллега-программист написал класс `BankAccount`, но не покрыл его функциональность тестами. 
+Коллега давно уволился, а класс используется практически везде в вашей программе, поэтому просто выкинуть его нельзя. Придётся тестировать! 
+
+По остаткам документации вам удалось собрать следующую информацию:
+
+* Чтобы создать `BankAccount`, нужно передать два аргумента — имя и фамилию человека, владеющего счётом.
+* Имя владельца можно получить, вызвав метод `getFullName()`. Результат вернётся в виде `String[]`, где по нулевому индексу будет имя человека, по первому — фамилия.
+* После создания счёт нужно дополнительно активировать при помощи метода `activate(String currency)`. До того как это произошло, метод `amount()` будет
+возвращать ошибку `IllegalStateException("Счёт не активирован.")`, а `getCurrency()` — `null`. Активный счёт всегда возвращает `Integer`, отличный от `null`.
+
+Счёт можно заблокировать вызовом `block`.
+
+Статус блокировки счёта можно узнать с помощью метода `isBlocked()`.
+
+Вам необходимо дописать 3 теста:
+
+* `shouldBeBlockedAfterBlockIsCalled` должен проверять, что счёт заблокирован, после вызова метода block().
+* `shouldReturnFirstNameThenSecondName` должен проверять, что при вызове метода `getFullName()` возвращается правильный массив строк.
+* `shouldReturnNullAmountWhenNotActive` должен проверять, что при вызове метода `getCurrency()` для неактивного счёта, значение `currency` равно `null`.
+
+`BankAccount`
+
+```java
+public class BankAccount {
+
+    private boolean isBlocked = false;
+    private Integer amount;
+    private String currency;
+
+    private final String firstName;
+    private final String secondName;
+
+    public BankAccount(String firstName, String secondName) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+    }
+
+    public void block() {
+        this.isBlocked = true;
+    }
+
+    public void activate(String currency) {
+        this.amount = 0;
+        this.currency = currency;
+    }
+
+    public Integer getAmount() {
+        if (amount == null) {
+            throw new IllegalStateException("Счёт не активирован.");
+        }
+        return this.amount;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public boolean isBlocked() {
+        return isBlocked;
+    }
+
+    public String[] getFullName() {
+        return new String[] {firstName, secondName};
+    }
+}
+```
+
+`BankAccountTest`
+
+```java
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+public class BankAccountTest {
+
+    @Test
+    public void shouldNotBeBlockedWhenCreated() {
+        BankAccount account = new BankAccount("a", "b");
+        assertFalse(account.isBlocked());
+    }
+
+    @Test
+    public void shouldReturnZeroAmountAfterActivation() {
+        BankAccount account = new BankAccount("a", "b");
+        account.activate("RUB");
+        assertEquals(Integer.valueOf(0), account.getAmount());
+        assertEquals("RUB", account.getCurrency());
+    }
+}
+```
+
+## Подсказки
+
+* В каждом тесте ваше первое действие — создать новый счёт. После этого вызовите один из его методов и посмотрите на результат.
+* С помощью метода `assertNull(...)` можно проверить, что переменная `currency` не проинициализирована.
+* Чтобы проверить, корректно ли изменяется булевая переменная `isBlocked`, необходимо вызвать метод `block()`, после чего проверить методом `assertTrue()`.
+* Для проверки того, корректный ли массив возвращает метод `getFullName()`, необходимо воспользоваться методом `assertArrayEquals(...)`.
+
+
+</details>
 
 Предыдущее занятие | &nbsp; | Следующее занятие
 :----------------:|:----------:|:----------------:
