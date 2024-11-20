@@ -247,7 +247,19 @@
 
 ### IntelliJ Build tool
 
+1. Запустите IntelliJ IDEA.
+2. Выберите слева вкладку **Projects**  и нажмите на кнопку **New Project**.
+   ![img.png](img6.png)
 
+3. Дайте имя проекту **debug-app**.
+   Language - **Java**, Build system - **IntelliJ**.
+   В качестве JDK используйте Amazon Coretto 22. Нажмите **Create**.
+   ![img_1.png](img7.png)
+4. Если все настройки пройдены успешно появится окно с вашим проектом.
+   ![img_2.png](img8.png)
+5. Запустите свой проект
+
+Проект успешно создан.
 
 
 
