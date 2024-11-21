@@ -264,6 +264,11 @@
 
 ## Пример проекта с подключением JUnit
 
+### Видеоинструкции
+    
+1. [Создание проекта и подключение JUnit(короткое видео без звука)](https://boosty.to/itmagic/posts/e66c8d9e-95c8-4fb3-acce-55dab5c0c5c5?share=post_link)
+2. [Создание проекта и подключение JUnit(с объяснением)](https://boosty.to/itmagic/posts/2082ebb4-545c-4af8-917c-12e7bc287205?share=post_link)
+
 ### IntelliJ Build tool
 
 #### Создание проекта
@@ -1945,11 +1950,6 @@ class MoneyTransferService {
 
 
 </details>
-
-
-
-
-
 
 Предыдущее занятие | &nbsp; | Следующее занятие
 :----------------:|:----------:|:----------------:
