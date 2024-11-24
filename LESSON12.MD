@@ -36,6 +36,10 @@
    * [Превращаем односвязный список в двусвязный](#превращаем-односвязный-список-в-двусвязный)
    * [Методы LinkedList<T> и их сложность](#методы-linkedlistt-и-их-сложность)
 8. [Задание 3](#задание-3)
+9. [ArrayList против LinkedList]
+   * [Причины выбрать ArrayList<T>](#причины-выбрать-arraylistt)
+   * [Причины выбрать LinkedList<T>](#причины-выбрать-linkedlistt)
+   * [Подтверждаем теорию расчётами](#подтверждаем-теорию-расчётами)
 
 <details>
 <summary>Введение в тему</summary>
@@ -1163,6 +1167,556 @@ public class HandMadeLinkedList<T> {
 * После создания элемента, необходимо проверить, существовал ли раньше хвост списка.
 Если да — предыдущий хвост начинает ссылаться на новый элемент `oldTail.next = newNode`. 
 Иначе, создаётся не только хвост, но и голова списка `head = newNode`.
+
+</details>
+
+<details>
+
+<summary>ArrayList против LinkedList</summary>
+
+# ArrayList против LinkedList
+
+О том, что лучше выбрать — `ArrayList<T>` или `LinkedList<T>`, любят спрашивать на собеседованиях.
+Ответ на этот вопрос неочевиден, ведь `LinkedList<T>` простая в реализации структура данных. 
+Однако в подавляющем большинстве задач лучше выбрать `ArrayList<T>`, и для этого есть ряд причин.
+
+![img_14.png](img_14.png)
+
+## Причины выбрать `ArrayList<T>`
+
+* **Каждый новый элемент в `LinkedList<T>` занимает в памяти больше места, чем новый элемент в `ArrayList<T>`.**
+
+Дело в том, что при добавлении нового элемента в `LinkedList<T>` создаётся минимум два объекта. 
+Один для представления данных внутри списка — `T data` и второй, отвечающий за сам узел и ссылки в нём — `Node<T>`. 
+Кроме того, каждый узел содержит сразу три ссылки: _на следующий элемент, 
+на предыдущий и на данные_. Новый элемент в `ArrayList<T>` требует меньше места.
+
+* **Узлы в `LinkedList<T>` могут храниться в оперативной памяти хаотично, 
+а массив внутри `ArrayList<T>`, как правило, расположен в памяти компьютера последовательно.**
+
+Поскольку узлы в `LinkedList<T>` — это полноценные объекты, они могут располагаться в памяти хаотично.
+Например, один в начале массива оперативной памяти, другой в середине, а третий в конце. 
+Из-за особенностей работы операционной системы, это может привести к снижению производительности. 
+В то же время массив элементов внутри `ArrayList<T>` в подавляющем большинстве случаев хранится последовательно. 
+
+* **Даже самые медленные операции в `ArrayList<T>` на практике работают быстрее, чем может показаться**
+
+Такие операции в `ArrayList<T>`, как добавление и удаление из середины или изменение размера массива по 
+сути представляют собой копирование одного массива в другой. А это настолько частая операция в дизайне операционных систем, 
+что её иногда оптимизируют на аппаратном уровне. В итоге условно медленные операции в `ArrayList<T>` 
+могут работать в реальности быстрее, чем простое копирование элементов из одного массива в другой.
+
+## Причины выбрать `LinkedList<T>`
+
+Иногда `LinkedList<T>` может быть эффективнее, чем Arr`ayList<T>`. Вот эти случаи:
+
+* **Задачи, где нужно часто вставлять элементы в начало или в середину списка или удалять их оттуда.**
+
+При вставке непоследнего элемента в `ArrayList<T>` происходит сдвиг всех оставшихся элементов вправо,
+а в случае с `LinkedList<T>` за счёт методов `removeFirst()` и `addFirst(T)` 
+можно гарантировать константное время выполнения O(1)`. 
+
+* **Задачи, где критически важно, чтобы вставка в конец работала всегда за константное время `O(1)`.**
+
+Из-за изменения размера `ArrayList<T>` не может дать такую гарантию.
+
+## Подтверждаем теорию расчётами
+
+Разница в скорости и производительности может быть практически незаметной на небольшом объёме данных,
+однако на больших данных она хорошо видна.
+Чтобы проиллюстрировать это, мы провели замеры производительности операций на двух списках.
+
+Рассмотрим для начала операцию по добавлению 1 млн элементов в начало списка.
+Для `ArrayList<T>` используется метод `add(0, T)`, для `LinkedList<T>` — метод `addFirst(T)`.
+Результаты получились такими:
+* ArrayList<T> — 66600 мс.
+* LinkedList<T> — 870 мс.
+
+Этот результат сходится с теорией. 
+Действительно, добавление элемента в начало `LinkedList<T>` — это простая операция по изменению ссылки на голову,
+в то время как для `ArrayList<T>` добавление элемента в начало — это две операции: 
+сначала сдвиг всех элементов вправо (с возможным увеличением вместимости),
+и лишь затем добавление элемента.  
+
+В случае с добавлением элемента в конец результаты получаются такими:
+* ArrayList<T> — 650 мс.
+* LinkedList<T> — 810 мс.
+
+Оба списка показывают практически одинаковое время выполнения, 
+потому что у каждого из них операция добавления элемента в конец происходит за `O(1)`.
+Для `LinkedList` вставка элемента в конец списка гарантированно работает за константное время. 
+Для `ArrayList` возможны два варианта:
+* в первом расширения структур внутри списка не происходит, и вставка нового элемента занимает минимальное время;
+* во втором время тратится на операции, связанные с расширением внутренней структуры списка,
+при этом некоторые операции вставки займут больше времени.
+
+А вот так будет выглядеть соотношение времени выполнения операций `get` и `remove` по произвольному индексу:
+
+
+![img_15.png](img_15.png)
+
+Эти результаты объясняются особенностями устройства коллекции. 
+Поскольку `LinkedList<T>` хранит только указатели на голову и хвост списка, получение элемента по индексу 
+в нём работает неэффективно — через поиск элемента от начала или конца. 
+Точно так же, прежде чем удалить элемент в `LinkedList<T>`, его нужно сначала найти. 
+Поэтому графики с `LinkedList get` и `LinkedList remove` показывают практически одинаковое время.
+
+В случае с операциями в `ArrayList<T>` всё так же объяснимо.
+При удалении элемента по индексу из `ArrayList<T>` поиск происходит за `O(1)`,
+но операция удаления включает в себя сдвиг всех элементов справа на место удалённого. 
+Для больших списков сдвиг массива очень затратная операция. Этим и объясняется отставание `ArrayList<T>` 
+при удалении произвольного элемента.
+
+</details>
+
+<details>
+<summary>Интерфейс Comparator и сортировка коллекций</summary>
+
+# Интерфейс Comparator и сортировка коллекций
+
+Списки — это коллекции, которые поддерживают операцию сортировки, то есть элементы в них можно расположить
+в определённом порядке. Задавать правила сортировки произвольных классов позволяет 
+**интерфейс** `Comparator<T>` (от англ. _compare_ — «сравнивать»). В этом уроке разберём, 
+как его реализовать и встроить в программу.
+
+Сложность сортировки объектов состоит в том, что нет заранее известного порядка, 
+в котором их надо расположить. Например, список целых чисел легко сортируется как по возрастанию, 
+так и по убыванию, потому что три всегда больше, чем два, а шесть меньше десяти.
+А вот товары в интернет-магазине сортировать не так просто: нужно выбрать какой-то из критериев — название, 
+стоимость, популярность или любой другой. 
+
+## Пишем компаратор
+
+Интерфейс `Comparator<T>` помогает организовать сортировку объектов. 
+Для этого он предоставляет ряд методов. Главный из них — метод для сравнения двух объектов `int compare(T, T)`.
+При наследовании интерфейса его нужно переопределить.
+Этот метод принимает два экземпляра одного типа и возвращает целое число. 
+
+В зависимости от результата определяется порядок между двумя объектами:
+* если результат меньше нуля, первый объект меньше второго;
+* если равен нулю, то объекты равны;
+* если больше нуля, первый объект больше второго.
+
+![img_16.png](img_16.png)
+
+Рассмотрим, как использовать интерфейс `Comparator<T>` на конкретном примере.
+Пусть в программе интернет-магазина товар задаётся классом `Item`.
+У него есть поля: название, цена и рейтинг популярности в виде целого числа:
+
+```java
+public class Item {
+    
+    public final String name; // название товара
+    public final int price; // цена
+    public final int popularity; // популярность
+
+    public Item(String name, int price, int popularity) {
+        this.name = name;
+        this.price = price;
+        this.popularity = popularity;
+    }
+    
+    // сразу переопределим toString(), чтобы потом выводить содержание списка
+        @Override
+    public String toString() { 
+        return "Item{" +
+            "name='" + name + '\'' +
+            ", price=" + price +
+            ", popularity=" + popularity +
+            '}';
+    }
+} 
+```
+
+Организуем несколько вариантов сортировки — по названию в алфавитном порядке,
+по стоимости и по популярности. Для каждого варианта нужно написать **компаратор** — класс, 
+который будет наследовать интерфейс `Comparator<T>` и переопределять метод `int compare(T, T)`. 
+
+Например, компаратор, который сравнивает цены товаров, назовём ItemPriceComparator. 
+При наследовании Comparator<T> нужно указать на месте параметра T класс Item. 
+Внутри переопределим метод compare(Item, Item). Нужно, чтобы более дешёвый товар отображался перед более дорогим.
+Для этого будем сравнивать цены между собой и возвращать 1, если цена выше; −1, если цена ниже; 0 — если цены равны. 
+
+```java
+import java.util.Comparator;
+
+public class ItemPriceComparator implements Comparator<Item> { // на месте T - класс Item
+
+    @Override
+    public int compare(Item item1, Item item2) {
+
+                // сравниваем товары — более дорогой должен быть дальше в списке
+        if (item1.price > item2.price) {
+            return 1;
+
+                // более дешёвый — ближе к началу списка
+        } else if (item1.price < item2.price) {
+            return -1;
+
+                // если стоимость равна, нужно вернуть 0
+        } else {
+            return 0;
+        }
+    }
+}
+```
+
+Теперь осталось самое главное — применить созданный компаратор цен `ItemPriceComparator`
+для сортировки списка товаров. Для этого в главном классе создаём **объект-компаратор** и затем передаём его в
+качестве параметра в метод сортировки `void <имя_списка>.sort(Comparator<? super T> c)` интерфейса `List<T>`.
+
+```java
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+
+        // создаём список товаров
+        List<Item> items = new ArrayList<>();
+        items.add(new Item("Рубашка", 4500, 37));
+        items.add(new Item("Носки", 55, 8));
+        items.add(new Item("Толстовка", 1399, 74));
+        items.add(new Item("Носки", 169, 19));
+
+        System.out.println("До сортировки:");
+        System.out.println(items);
+
+        // создаём объект-компаратор по цене
+        ItemPriceComparator itemPriceComparator = new ItemPriceComparator();
+
+        // применяем компаратор
+        items.sort(itemPriceComparator);
+
+        System.out.println("После сортировки:");
+        System.out.println(items);
+    }
+
+
+    static class Item {
+
+        public final String name;
+        public final int price;
+        public final int popularity;
+
+        public Item(String name, int price, int popularity) {
+            this.name = name;
+            this.price = price;
+            this.popularity = popularity;
+        }
+
+        @Override
+        public String toString() {
+            return "Item{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                ", popularity=" + popularity +
+                '}';
+        }
+    }
+
+    static class ItemPriceComparator implements Comparator<Item> {
+
+        @Override
+        public int compare(Item item1, Item item2) {
+
+            if (item1.price > item2.price) {
+                return 1;
+
+            } else if (item1.price < item2.price) {
+                return -1;
+
+            } else {
+                return 0;
+            }
+        }
+    }
+}
+```
+
+```commandline
+Результат
+
+До сортировки:
+
+[Item{name='Рубашка', price=4500, popularity=37}, Item{name='Носки', price=55, popularity=8}, Item{name='Толстовка', price=1399, popularity=74}, Item{name='Носки', price=169, popularity=19}]
+
+После сортировки:
+
+[Item{name='Носки', price=55, popularity=8}, Item{name='Носки', price=169, popularity=19}, Item{name='Толстовка', price=13
+```
+
+Получилось! Теперь товары отсортированы по цене в порядке возрастания!
+
+Небольшой лайфхак: при реализации `int compare(T,T)` важен только знак возвращаемого целого числа.
+Другими словами, `-20` и `-1` интерпретируются одинаково. 
+В нашем примере это значит, что если цена первого товара больше второго, то результат их вычитания 
+будет положительным числом, если меньше — отрицательным, 
+если цены равны — нулём. Зная это, код переопределяемого метода можно значительно упростить:
+
+```java
+import java.util.Comparator;
+
+public class ItemPriceComparator implements Comparator<Item> {
+
+    @Override
+    public int compare(Item item1, Item item2) {
+        return item1.price - item2.price;
+        /* Если положительный результат => первый товар дороже второго.
+        Если ноль => цены равны.
+        Если отрицательный результат => первый товар дешевле второго. */
+    }
+}
+```
+
+Аналогичным образом напишем компаратор для сравнения товаров по популярности ItemPopularityComparator.
+Учитываем, что товарам присваивается рейтинг в диапазоне от 1 до 100, где 1 — самый непопулярный товар, а 100 — самый популярный.
+
+```java
+import java.util.Comparator;
+
+public class ItemPopularityComparator implements Comparator<Item> {
+  
+    @Override
+    public int compare(Item item1, Item item2) {
+		return item1.popularity - item2.popularity;
+    }
+
+}
+```
+
+## Готовые решения
+
+Для некоторых стандартных типов есть готовые решения, которые помогают при сортировке. 
+Например, для лексикографической сортировки слов без учёта регистра можно использовать статическую переменную 
+`CASE_INSENSITIVE_ORDER` класса `String`, которая хранит в себе `Comparator<String>`, сортирующий строки без учёта регистра. 
+
+Создадим компаратор `ItemStringInSensitiveNameComparator` и отсортируем список товаров в лексикографической 
+последовательности с помощью `String.CASE_INSENSITIVE_ORDER`.
+
+```java
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+
+        // создаём список товаров
+        List<Item> items = new ArrayList<>();
+        items.add(new Item("Рубашка", 4500, 37));
+        items.add(new Item("Носки", 55, 8));
+        items.add(new Item("Толстовка", 1399, 74));
+        items.add(new Item("Носки", 169, 19));
+
+
+        System.out.println("До сортировки:");
+        System.out.println(items);
+
+        // создаём объект-компаратор лексикограической сортировки
+        ItemStringInSensitiveNameComparator comparator = new ItemStringInSensitiveNameComparator();
+
+        // применяем компаратор
+        items.sort(comparator);
+
+        System.out.println("После сортировки:");
+        System.out.println(items);
+    }
+
+    static class Item {
+
+        public final String name;
+        public final int price;
+        public final int popularity;
+
+        public Item(String name, int price, int popularity) {
+            this.name = name;
+            this.price = price;
+            this.popularity = popularity;
+        }
+
+        @Override
+        public String toString() {
+            return "Item{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                ", popularity=" + popularity +
+                '}';
+        }
+    }
+
+    static class ItemStringInSensitiveNameComparator implements Comparator<Item> {
+
+        /*
+         String.CASE_INSENSITIVE_ORDER принимает строки в качестве аргументов,
+         поэтому передадим названия товаров в его метод .compare(...)
+         */
+        @Override
+        public int compare(Item item1, Item item2) {
+            return String.CASE_INSENSITIVE_ORDER.compare(item1.name, item2.name);
+        }
+    }
+}
+```
+
+```commandline
+Результат
+
+До сортировки:
+
+[Item{name='Рубашка', price=4500, popularity=37}, Item{name='Носки', price=55, popularity=8}, Item{name='Толстовка', price=1399, popularity=74}, Item{name='Носки', price=169, popularity=19}]
+
+После сортировки:
+
+[Item{name='Носки', price=55, popularity=8}, Item{name='Носки', price=169, popularity=19}, Item{name='Рубашка', 
+```
+
+Пример сортировки списка фруктов в лексикографическом порядке.
+
+```java
+import java.util.ArrayList;
+
+public class Practicum {
+    public static void main(String[] args) {
+        ArrayList<String> fruits = new ArrayList<>();
+        fruits.add("Банан");
+        fruits.add("Апельсин");
+        fruits.add("Яблоко");
+        fruits.add("Груша");
+
+        System.out.println(fruits); // [Банан, Апельсин, Яблоко, Груша]
+
+        // применяем компаратор
+        fruits.sort(String.CASE_INSENSITIVE_ORDER);
+
+        System.out.println(fruits); // [Апельсин, Банан, Груша, Яблоко]
+    }
+}
+```
+
+Классы-обёртки, такие как `Integer` или `Double`, не реализуют компараторы, 
+но содержат статические методы `compare(...)`, которые можно использовать. 
+Если воспользоваться методом `Integer.compare(Integer, Integer)`, код нашего компаратора цен 
+товаров ItemPriceComparator можно переписать так:
+
+```java
+import java.util.Comparator;
+
+public class ItemPriceComparator implements Comparator<Item> {
+
+    @Override
+    public int compare(Item item1, Item item2) {
+
+        // используем статический метод compare(Integer, Integer) из класса Integer
+        return Integer.compare(item1.price, item2.price);
+    }
+}
+```
+
+## Метод `reversed()`
+
+Ещё у интерфейса `Comparator<T>` есть полезный метод `reversed()` (от англ _reverse_ — «обратить, перевернуть»). 
+Его задача — отсортировать коллекцию в обратном порядке. Если основной компаратор сортирует по убыванию, 
+то `reversed()` компаратор — по возрастанию. 
+Это сильно упрощает реализацию двухсторонних сортировок — достаточно реализовать сортировку
+только в одном направлении, противоположную всегда можно получить через вызов `reversed()`.
+Например, на сайтах интернет-магазинов отсортировать товары всегда можно как по возрастанию цены, так и по её убыванию.
+
+Воспользуемся `reversed()` для компаратора цен товаров `ItemPriceComparator`.
+Нужно получить сортировку от самого дорогого товара к самому дешёвому.
+
+```java
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+
+        List<Item> items = new ArrayList<>();
+        items.add(new Item("Рубашка", 4500, 37));
+        items.add(new Item("Носки", 55, 8));
+        items.add(new Item("Толстовка", 1399, 74));
+        items.add(new Item("Носки", 169, 19));
+
+        System.out.println("До сортировки:");
+        System.out.println(items);
+
+        // компаратор по цене от дешёвого к дорогому
+        ItemPriceComparator itemPriceComparator = new ItemPriceComparator();
+
+        // применяем его
+        items.sort(itemPriceComparator);
+
+        System.out.println("После сортировки по возрастанию цены:");
+        System.out.println(items);
+
+        // создаём обратный компаратор цен
+        Comparator<Item> reversedItemPriceComparator = itemPriceComparator.reversed();
+
+        // применяем его
+        items.sort(reversedItemPriceComparator);
+        System.out.println("После сортировки по убыванию цены:");
+        System.out.println(items);
+    }
+
+    static class Item {
+
+        // Наименование товара.
+        public final String name;
+
+        // Цена товара.
+        public final int price;
+
+        // Популярность товара.
+        public final int popularity;
+
+        public Item(String name, int price, int popularity) {
+            this.name = name;
+            this.price = price;
+            this.popularity = popularity;
+        }
+
+        @Override
+        public String toString() {
+            return "Item{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                ", popularity=" + popularity +
+                '}';
+        }
+    }
+
+    static class ItemPriceComparator implements Comparator<Item> {
+
+        @Override
+        public int compare(Item item1, Item item2) {
+            return Integer.compare(item1.price, item2.price);
+        }
+    }
+}
+```
+
+```commandline
+
+Результат
+
+До сортировки:
+
+[Item{name='Рубашка', price=4500, popularity=37}, Item{name='Носки', price=55, popularity=8}, Item{name='Толстовка', price=1399, popularity=74}, Item{name='Носки', price=169, popularity=19}]
+
+После сортировки по возрастанию цены:
+
+[Item{name='Носки', price=55, popularity=8}, Item{name='Носки', price=169, popularity=19}, Item{name='Толстовка', price=1399, popularity=74}, Item{name='Рубашка', price=4500, popularity=37}]
+
+После сортировки по убыванию цены:
+
+[Item{name='Рубашка', price=4500, popularity=37}, Item{name='Толстовка', price=1399, popularity=74}, Item{n
+```
 
 </details>
 
