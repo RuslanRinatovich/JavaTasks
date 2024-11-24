@@ -11,7 +11,7 @@
 
 ***Критерии оценивания***
 
-* Оценка 5 - надо сделать все четыре заданий.
+* Оценка 5 - надо сделать все пять заданий.
 * Оценка 4 - надо сделать любые три задания.
 * Оценка 3 - надо сделать два любых задания.
 
@@ -45,6 +45,16 @@
    * [Готовые решения](#готовые-решения)
    * [Метод reversed()](#метод-reversed)
 11. [Задание 4](#задание-4)
+12. [Класс-помощник Collections](#класс-помощник-collections)
+   * [Быстрые списки](#быстрые-списки)
+   * [Замена всех элементов списка](#замена-всех-элементов-списка)
+   * [Копирование элементов одного списка в другой](#копирование-элементов-одного-списка-в-другой)
+   * [Сортировка через Collections](#сортировка-через-collections)
+   * [Поиск минимума и максимума](#поиск-минимума-и-максимума)
+   * [Утилитарные классы](#утилитарные-классы)
+13. [Кратко об уроке](#кратко-об-уроке)
+
+
 <details>
 <summary>Введение в тему</summary>
 
@@ -1851,6 +1861,573 @@ public class DateTimeComparator implements Comparator<DateTime> {
 `Integer.compare(.., ..)` в качестве результата компаратора.
 
 
+
+</details>
+
+
+<details>
+
+<summary>Класс-помощник Collections</summary>
+
+# Класс-помощник Collections
+
+Во фреймворк коллекций Java входят не только реализации основных структур данных, 
+но и ряд вспомогательных, или **утилитарных** (от англ. _utility_ — «полезный») классов.
+Их задача — упростить работу с другими классами в приложении. 
+Утилитарные классы используются часто, их можно встретить в любой большой программе.
+В этом уроке поговорим об одном из них — классе-помощнике `Collections`.
+
+Класс `Collections` предоставляет более 20 методов для работы с разными структурами данных. 
+Здесь мы рассмотрим только те, которые касаются работы со списками.
+
+## Быстрые списки
+
+Несколько методов `Collections` позволяют быстро создавать неизменяемые списки нужного размера:
+* `Collections.emptyList()` создаёт пустой список;
+* `Collections.singletonList(T)` создаёт список из единственного элемента;
+* `Collections.nCopies(int, T)` создаёт список, где элемент `T` повторён `n` раз.
+
+```java
+import java.util.Collections;
+import java.util.List;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        final List<String> emptyList = Collections.emptyList();
+        final List<String> singletonList = Collections.singletonList("Привет, мир!");
+        final List<String> nCopiesList = Collections.nCopies(5, "Java");
+
+        System.out.println(emptyList);
+        System.out.println(singletonList);
+        System.out.println(nCopiesList);
+    }
+}
+```
+
+```
+Результат
+
+[]
+
+[Привет, мир!]
+
+[Java, Java, Java, Java, Java]
+```
+
+Создавать и сразу использовать такие маленькие списки нужно, например, для передачи данных в методы или конструкторы классов.
+Добавить новые элементы ни в один из них не получится. Неизменяемость — это удобное свойство: не нужно переживать, 
+что ссылка на список попадёт в другую часть программы, и в него будут внесены изменения. 
+Чем более ограниченные структуры данных вы используете, тем меньше багов появится в программе. 
+
+Неизменяемый список всегда можно превратить в изменяемый `ArrayList`. 
+Это может понадобиться, если элементы нужно отсортировать. Сортировка, как правило, 
+включает перемещения элементов из одного конца списка в другой, а неизменяемые структуры данных 
+запрещают менять порядок элементов. Чтобы создать изменяемый список,
+нужно передать неизменяемый список (созданный с помощью `List.of(..)` 
+или `Collections.emptyList/singletonList/nCopies)` в конструктор `ArrayList`: 
+
+```java
+// immutableList — неизменяемый список
+final List<String> immutableList = List.of("Ёж", "Медведь", "Лиса");
+
+// mutableList уже можно изменить
+final ArrayList<String> mutableList = new ArrayList<>(immutableList);
+```
+
+## Замена всех элементов списка
+
+Метод `Collections.fill(List<T>, T)` позволяет присвоить всем элементам списка `List<T>` 
+единое значение `T`. Запустите этот код и посмотрите на результат:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        List<Long> listOfLongs = new ArrayList<>();
+        listOfLongs.add(157478403L);
+        listOfLongs.add(2450033L);
+        listOfLongs.add(32039458858604L);
+
+        System.out.println(listOfLongs);
+
+        Collections.fill(listOfLongs, 5555555L);
+        System.out.println(listOfLongs);
+    }
+}
+```
+```
+Результат
+
+[157478403, 2450033, 32039458858604]
+
+[5555555, 5555555, 5555555]
+
+```
+Одно из частых применений этого метода — подготовка данных для тестов в программе. 
+
+## Копирование элементов одного списка в другой
+
+Скопировать все элементы из одного списка в другой позволяет метод `Collections.copy(List<T>, List<T>)`. 
+Список, из которого копируются элементы, указывается вторым. Например,
+если нужно скопировать список больших чисел в список той же длины, 
+где хранятся маленькие числа, это будет выглядеть так:
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        List<Long> listOfSmallLongs = new ArrayList<>();
+        listOfSmallLongs.add(1L);
+        listOfSmallLongs.add(2L);
+        listOfSmallLongs.add(3L);
+
+        List<Long> listOfBigLongs = new ArrayList<>();
+        listOfBigLongs.add(10000000000L);
+        listOfBigLongs.add(20000000000L);
+        listOfBigLongs.add(30000000000L);
+
+        System.out.println(listOfSmallLongs);
+        System.out.println(listOfBigLongs);
+
+        Collections.copy(listOfSmallLongs, listOfBigLongs);
+
+        System.out.println(listOfSmallLongs);
+        System.out.println(listOfBigLongs);
+    }
+}
+```
+```
+Результат
+
+[1, 2, 3]
+
+[10000000000, 20000000000, 30000000000]
+
+[10000000000, 20000000000, 30000000000]
+
+[10000000000, 20000000000, 30000000000]
+```
+
+Список, куда происходит копирование, должен быть не меньше списка, из которого копируются элементы.
+В противном случае произойдёт ошибка.
+Использование copy(List<T>, List<T>) требует гораздо меньше ресурсов, чем пересоздание списка, если списки очень большие.
+
+## Сортировка через Collections
+
+С помощью `Collections` можно сортировать списки точно так же, 
+как и с помощью метода `.sort(Comparator<T>)` в `List<T>`. 
+Это делается через метод `Collections.sort(List<T>, Comparator<T>)`.
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+
+public class PracticumA {
+    public static void main(String[] args) {
+        ArrayList<String> fruits = new ArrayList<>();
+        fruits.add("Банан");
+        fruits.add("Апельсин");
+        fruits.add("Яблоко");
+        fruits.add("Груша");
+
+        System.out.println(fruits);
+
+        Collections.sort(fruits, String.CASE_INSENSITIVE_ORDER);
+
+        System.out.println(fruits);
+    }
+}
+```
+```
+Результат
+
+[Банан, Апельсин, Яблоко, Груша]
+
+[Апельсин, Банан, Груша, Яблоко]
+```
+
+Методы `Collections.sort(List, Comparator)` 
+и `List.sort(Comparator)` ведут себя одинаково. Можете выбирать любой из них. 
+
+## Поиск минимума и максимума
+
+К наиболее часто используемым методам `Collections` относятся 
+методы поиска минимума `Collections.min(Collection<T>)` и максимума `Collections.max(Collection<T>)`. 
+Чтобы они сработали корректно, необходимо, чтобы тип `T` реализовывал интерфейс `Comparable<T>`.
+Хоть название `Comparable<T>` и похоже на `Comparator<T>` — это два разных интерфейса и их нельзя путать.
+
+Задача `Comparable<T>` — задать естественную сортировку для класса объектов. 
+Он предоставляет единственный метод `int compareTo(T)`, который ведёт себя аналогично методу `compare(T, T)`
+из `Comparator<T>`. Если `compareTo` возвращает число меньше нуля — текущий элемент (доступный через `this`) 
+меньше второго элемента (то есть аргумента); если больше нуля — текущий элемент больше аргумента; 
+если ноль — элементы равны.
+
+Наследовать `Comparable<T>` в отличие от `Comparator<T>` можно только один раз.
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+
+// класс может наследовать Comparable<T> только один раз
+public class Student implements Comparable<Student> {
+    private final String name;
+    private final int age;
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // переопределяем compareTo - студенты будут сравниваться по имени и по возрасту
+    @Override
+    public int compareTo(Student o) {
+        final int nameComparison = String.CASE_INSENSITIVE_ORDER.compare(this.name, o.name);
+        if (nameComparison != 0) {
+            return nameComparison;
+        } else {
+            return Integer.compare(this.age, o.age);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+            "name='" + name + '\'' +
+            ", age=" + age +
+            '}';
+    }
+
+    public static void main(String[] args) {
+        final var a = new Student("aaa", 30);
+        final var b = new Student("aaa", 27);
+        final var c = new Student("ccc", 33);
+
+        final var d = new Student("ddd", 21);
+
+        // создаём изменяемый список из неизменяемого List.of(..)
+        final var list = new ArrayList<>(List.of(a, b, c, d));
+        Collections.sort(list);
+        System.out.println(list);
+
+        // выводим минимальный элемент в соответствии с правилами сортировки Comparable<Student>
+        // так как список предварительно отсортирован, минимальным будет первый элемент
+        System.out.println(Collections.min(list));
+
+        // теперь напечатаем максимальный элемент
+        System.out.println(Collections.max(list));
+    }
+}
+```
+
+```
+[Student{name='aaa', age=27}, Student{name='aaa', age=30}, Student{name='ccc', age=33}, Student{name='ddd', age=21}]
+
+Student{name='aaa', age=27}
+
+Student{name='ddd', age=21}
+```
+
+`Comparable<T>` подходит, если у класса может быть единственный верный способ сортировки. 
+Например, такой есть у целых чисел — от меньшего к большему. 
+Поэтому класс `Integer` реализует `Comparable<Integer>`. С объектами всё сложнее — товары в 
+интернет-магазине иногда нужно сортировать по цене, а иногда по популярности.
+Реализовать `Comparable<T>` имеет смысл только для достаточно простых классов. 
+Для всех остальных лучше создать отдельный класс, реализующий интерфейс `Comparator<T>`.
+
+`Comparator<T>` также можно использовать для поиска минимума и максимума с 
+помощью методов `Collections` — `Collections.min(Collection, Comparator<T>)`
+и `Collections.max(Collection, Comparator<T>)`. Оба принимают экземпляры `Comparator<T>` в качестве второго аргумента.
+
+Запустите сниппет и посмотрите на результат. 
+Попробуйте вызвать методы `min/max` для списка `List<Puppy>`,
+не передавая в качестве второго аргумента компаратор.
+Такие вызовы завершатся ошибкой,
+поскольку `Puppy` не реализует интерфейс `Comparable<T>`.
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class Practicum {
+
+    public static class Puppy {
+        public final String name;
+        public final int age;
+
+        public Puppy(String name, int age) {
+            this.name = name;
+            this.age = age;
+        }
+
+        @Override
+        public String toString() {
+            return "Puppy{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+        }
+    }
+
+    public static class PuppyNameComparator implements Comparator<Puppy> {
+
+        @Override
+        public int compare(Puppy puppy1, Puppy puppy2) {
+            return String.CASE_INSENSITIVE_ORDER.compare(puppy1.name, puppy2.name);
+        }
+    }
+
+
+    public static void main(String[] args) {
+        List<Integer> listOfIntegers = new ArrayList<>();
+        listOfIntegers.add(1);
+        listOfIntegers.add(3);
+        listOfIntegers.add(2);
+
+        // класс Integer реализует Comparable
+        System.out.println(Collections.max(listOfIntegers));
+        System.out.println(Collections.min(listOfIntegers));
+
+        /* Класс Puppy не реализует Comparable, 
+        поэтому для поиска минимума и максимума необходимо передать Comparator. */
+        List<Puppy> puppies = new ArrayList<>();
+        puppies.add(new Puppy("Борис", 2));
+        puppies.add(new Puppy("Гаф", 3));
+        puppies.add(new Puppy("Изольда", 4));
+
+        PuppyNameComparator comparator = new PuppyNameComparator();
+        System.out.println(Collections.max(puppies, comparator));
+        System.out.println(Collections.min(puppies, comparator));
+    }
+}
+```
+
+```
+Результат
+
+3
+
+1
+
+Puppy{name='Изольда', age=4}
+
+Puppy{name='Борис', age=2}
+```
+
+Подробнее об остальных методах Collections можно прочитать в [документации](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/Collections.html).
+
+## Утилитарные классы
+
+Как правило, программисты создают такие классы, как `Collections`,
+чтобы объединить в одном классе набор статических методов или констант, 
+которые нужны сразу во многих местах в программе. Эти классы необязательно должны быть в стандартной библиотеке, 
+их можно написать и самостоятельно. Классы-помощники нужны, например, для организации работы с файлами и 
+определения формата вывода данных на экран.  
+
+Ещё в утилитарные классы часто выносят некоторую «общую» функциональность.
+Например, метод `Collections.min(Collection)` мог бы находиться и в интерфейсе `Collection`, 
+но тогда всем его наследникам надо было бы его реализовать. В этом нет смысла, поскольку поиск минимума 
+(или максимума) выполняется идентичным образом для любой коллекции. 
+
+Важно запомнить, что любой утилитарный класс обладает двумя важными характеристиками:
+
+* **Нет публичных конструкторов.** В них нет смысла, поскольку все методы утилитарного класса статические либо приватные, то есть доступны без создания экземпляра класса. Это же справедливо для констант — они все статические и неизменяемые.
+
+  Чтобы сделать класс без доступных публичных конструкторов, нужно переопределить конструктор по умолчанию с модификатором private. Вот так выглядит конструктор класса-помощника Collections:
+```java
+    public class Collections {
+  
+      // приватный класс перезапишет «конструктор по умолчанию», но вызвать его не получится
+      private Collections() {
+      }
+  }
+  
+ ```
+* **Нет изменяемых внутренних полей** (за редким исключением). Утилитарный класс можно использовать в любом месте программы, поэтому его методы должны работать всегда вне зависимости от состояния внутренних полей. Лучший вариант, когда таких полей нет совсем.
+ 
+</details>
+
+<details>
+
+<summary>Задание 5</summary>
+
+# Задание 5
+
+В лаборатории высокотехнологичного агрохолдинга разработали уникальную методику селекции картошки. 
+Каждой картофелине из нового урожая присваивается её уникальный идентификатор,
+а также измеряются основные характеристики — масса, длина и ширина. 
+Затем для каждой картофелины вычисляется альфа-характеристика, равная 50% от массы, 65% от длины и 80% от ширины. 
+
+После этого, выбираются две картошки с самым большим показателям
+альфа-характеристик и две с самым маленьким. Именно они отправляются на главное испытание,
+по которому производится вывод, поступит ли этот сорт картошки в продажу или нет.
+
+Вам необходимо реализовать для класса картошки `Potato` интерфейс `Comparable<Potato>`, 
+который сравнит две картофелины по их альфа-характеристикам. 
+
+После этого допишите метод `findPotatoesForExperiment` класса `PotatoLaboratory`,
+чтобы он находил две самые большие и две самые маленькие по альфа-характеристикам картошки. 
+Результат выведите в порядке от меньшего к большему.
+
+`PotatoLaboratory.java`
+
+```java
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class PotatoLaboratory {
+
+    public static void main(String[] args) {
+        List<Potato> potatoes = List.of(
+            new Potato(1, 30, 30, 30),
+            new Potato(2, 35, 31, 35),
+            new Potato(3, 40, 35, 44),
+            new Potato(4, 28, 44, 41),
+            new Potato(5, 33, 23, 30),
+            new Potato(6, 35, 33, 33),
+            new Potato(7, 38, 41, 24)
+        );
+
+        List<Potato> fourUnderExperiment = findPotatoesForExperiment(potatoes);
+
+        System.out.println("Картофелины для эксперимента: " + fourUnderExperiment);
+    }
+
+    private static List<Potato> findPotatoesForExperiment(List<Potato> potatoes) {
+				/* Вычислите две самые большие и две самые маленькие картофелины, 
+           а затем выведите их в порядке от самых маленьких до самых больших.*/
+				return null;
+    }
+}
+```
+
+`Potato.java`
+
+```java
+import java.util.Objects;
+
+public class Potato implements Comparable<Potato> {
+
+    public final int id;
+
+    /**
+     * Масса
+     */
+    public final int weight;
+
+    /**
+     * Длина
+     */
+    public final int length;
+
+    /**
+     * Ширина
+     */
+    public final int girth;
+
+    public Potato(int id, int weight, int length, int girth) {
+        this.id = id;
+        this.weight = weight;
+        this.length = length;
+        this.girth = girth;
+    }
+
+    @Override
+    public int compareTo(Potato o) {
+			// Сравните картофелины по альфа характеристике
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Potato potato = (Potato) o;
+        return id == potato.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "Potato{" +
+            "id=" + id +
+            ", weight=" + weight +
+            ", length=" + length +
+            ", girth=" + girth +
+            '}';
+    }
+}
+```
+
+
+## Подсказки
+
+* Чтобы вычислить альфа-характеристику картофеля, 
+удобно использовать вспомогательный метод `public int calculateAlpha(Potato o)`. 
+Его тело будет таким — `{return (int) (o.weight * 0.5 + o.length * 0.65 + o.girth * 0.80);}`.
+
+* Для нахождения минимальной и максимальной картошки можно использовать такой способ:
+взять сначала минимальный и максимальный элемент при помощи методов `Collections.max()` и `Collections.min()`,
+удалить их из списка, а затем взять ещё раз. 
+Помните, что для начала надо сделать изменяемую копию списка при помощи `new ArrayList<>(potatoes)`.
+
+* Есть и второй способ по получению двух максимальных и минимальных элементов. 
+Сначала отсортируйте весь картофель при помощи `Collections.sort(..)`, а затем возьмите элементы с правильными индексами.
+
+</details>
+
+<details>
+
+<summary>Кратко об уроке</summary>
+
+# Кратко об уроке
+
+**Java Collections Framework** — набор интерфейсов и классов, 
+которые реализуют основные структуры данных на **Java**. Иерархия коллекций состоит из двух частей — **Iterable** и **Map**.
+
+![img_17.png](img_17.png)
+
+В этой теме мы сосредоточились на той части иерархии, вершина которой — `Iterable`.
+Этот интерфейс позволяет перебирать элементы коллекции один за другим.
+
+Интерфейс `Collection` предоставляет методы для добавления и удаления элементов,
+вычисления размера коллекции и поиска внутри неё.
+
+Интерфейс `List` нужен для создания списков. В них элементы могут повторяться и располагаться 
+в произвольном порядке. Кроме того, списки при необходимости могут расширяться в размере и поддерживают операции сортировки.
+
+Две реализации `List` — `ArrayList` и `LinkedList`.
+* `ArrayList` — реализация на Java динамического массива;
+* `LinkedList` отвечает за реализацию двунаправленного связного списка.
+
+В подавляющем большинстве задач лучше выбрать `ArrayList`. Но иногда `LinkedList` может быть эффективнее. 
+Это следующие задачи:
+* в которых нужно часто вставлять элементы в начало списка или удалять их оттуда;
+* с большим количеством вставок в середину списка и удалений оттуда;
+* в которых критически важно, чтобы вставка в конец работала всегда за константное время `O(1)`.
+
+Интерфейс `Comparator` помогает задавать правила **сортировки** произвольных классов.
+Компаратор — класс, который наследует интерфейс `Comparator`. Компараторы позволяют создать разные сортировки 
+для одного класса и могут работать с любыми объектами.
+
+Задача утилитарных классов — упростить работу с другими классами в приложении. 
+Один из них — класс-помощник `Collections`, который предоставляет более 20 методов для работы с различными структурами данных.
 
 </details>
 

@@ -22,4 +22,4 @@
 
 [Урок 11. Unit-тесты](LESSON11.MD)
 
-[Урок 12. Списки](LESSON12[LESSON11.MD](LESSON11.MD).MD)
+[Урок 12. Списки](LESSON12.MD)
