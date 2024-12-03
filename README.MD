@@ -25,3 +25,5 @@
 [Урок 12. Списки](LESSON12.MD)
 
 [Урок 13. Интерфейс Map](LESSON13.MD)
+
+[Урок 14. Классы HashMap, LinkedHashMap и TreeMap](LESSON14.MD)
