@@ -592,6 +592,162 @@ class User {
 
 </details>
 
+<details>
+<summary>Задание 3</summary>
+
+## Задание 3
+
+Представьте, что вы работаете над системой, которая автоматизирует работу автосалона. В 
+ней хранится информация о всех марках автомобилей, доступных для заказа. 
+Усовершенствуйте код так, чтобы машины в хеш-таблицы 
+хранились в отсортированном виде. 
+Сортировка должна быть по цене — от дешёвых к дорогим.
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+
+public class Practicum {
+    public static void main(String[] args) {
+        // ключ – автомобиль, значение – цена
+        Map<Car, Integer> cars = new HashMap<>();
+
+        // хеш-таблица заполняется данными
+        cars.put(new Car("Audi A6", 3_760_000), 2);
+        cars.put(new Car("Honda CR-V ", 2_500_000), 3);
+        cars.put(new Car("KIA Cerato", 1_300_000), 8);
+        cars.put(new Car("Volkswagen Tiguan", 1_935_000), 5);
+
+        // проверяем порядок
+        for (Car car : cars.keySet()) {
+            System.out.println(car);
+        }
+    }
+}
+
+class Car {
+    String model;
+    Integer priceInRubles;
+
+    public Car(String model, Integer priceInRubles) {
+        this.model = model;
+        this.priceInRubles = priceInRubles;
+    }
+    
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Car car = (Car) o;
+
+        return model.equals(car.model);
+    }
+
+    public int hashCode() {
+        return model.hashCode();
+    }
+
+    public String toString() {
+        return "Car{model=" + model + ", priceInRubles=" + priceInRubles + "}";
+    }
+}
+```
+
+### Подсказки
+
+* Замените `HashMap` на `TreeMap`.
+* Класс `Car` должен реализовывать интерфейс `Comparable`.`.
+```java
+class Car implements Comparable<Car> 
+```
+* Реализация метода `compareTo` должны быть такой:
+```java
+public int compareTo(Car o) {
+    return this.priceInRubles - o.priceInRubles;
+}
+```
+
+</details>
+
+<details>
+<summary>Задание 4</summary>
+
+## Задание 4
+
+
+В списке `actors` содержатся имена актёров, 
+которые сыграли главную роль в фильме про Джеймса Бонда. 
+Часто один и тот же актёр играл главную роль сразу в нескольких фильмах подряд.
+Всего в «бондиане» 25 фильмов, и имена актёров в списке `actors` соответствуют порядку их выхода.
+
+Преобразуйте этот список в хеш-таблицу таким образом, чтобы в качестве ключа было
+имя актёра, а в значении хранилось количество фильмов, в которых этот актёр принял участие.
+
+Порядок актёров в хеш-таблице должен соответствовать 
+порядку выхода первого фильма с участием этого актёра.
+
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public class Practicum {
+    public static void main(String[] args) {
+        List<String> actorsList = new ArrayList<>();
+        fillActors(actorsList);
+
+        ...// заполните хэш-таблицу
+       
+        for (...) {
+            String actor = ...
+            int filmsCount = ...
+            System.out.println(actor + " снялся в " + filmsCount + " фильмах");
+        }
+    }
+
+    private static void fillActors(List<String> actors) {
+        actors.add("Шон Коннери");     // 1962 Доктор Ноу
+        actors.add("Шон Коннери");     // 1963 Из России с любовью
+        actors.add("Шон Коннери");     // 1964 Голдфингер
+        actors.add("Шон Коннери");     // 1965 Шаровая молния
+        actors.add("Шон Коннери");     // 1967 Живёшь только дважды
+        actors.add("Джордж Лэзенби");  // 1969 На секретной службе Её Величества
+        actors.add("Шон Коннери");     // 1971 Бриллианты навсегда
+        actors.add("Роджер Мур");      // 1973 Живи и дай умереть
+        actors.add("Роджер Мур");      // 1974 Человек с золотым пистолетом
+        actors.add("Роджер Мур");      // 1977 Шпион, который меня любил
+        actors.add("Роджер Мур");      // 1979 Лунный гонщик
+        actors.add("Роджер Мур");      // 1981 Только для твоих глаз
+        actors.add("Роджер Мур");      // 1983 Осьминожка
+        actors.add("Роджер Мур");      // 1985 Вид на убийство
+        actors.add("Тимоти Далтон");   // 1987 Искры из глаз
+        actors.add("Тимоти Далтон");   // 1989 Лицензия на убийство
+        actors.add("Пирс Броснан");    // 1995 Золотой глаз
+        actors.add("Пирс Броснан");    // 1997 Завтра не умрёт никогда
+        actors.add("Пирс Броснан");    // 1999 И целого мира мало
+        actors.add("Пирс Броснан");    // 2002 Умри, но не сейчас
+        actors.add("Дэниел Крейг");    // 2006 Казино «Рояль»
+        actors.add("Дэниел Крейг");    // 2008 Квант милосердия
+        actors.add("Дэниел Крейг");    // 2012 007: Координаты «Скайфолл»
+        actors.add("Дэниел Крейг");    // 2015 007: Спектр
+        actors.add("Дэниел Крейг");    // 2021 Не время умирать
+    }
+}
+```
+
+### Подсказки
+
+* Создайте новый объект `LinkedHashMap` `actorsMap`. 
+В нём будут храниться имена актёров и количество фильмов.
+* Импортируйте пакет `LinkedHashMap` и пакет `Map`
+Заполните `actorsMap` данными на основе `actorsList`:
+```java
+actorsMap.put(actor, actorsMap.getOrDefault(actor, 0) + 1) 
+```
+* Используйте `entry.getKey()` и `entry.getValue()`, чтобы вывести данные из хеш-таблицы на консоль.
+
+</details>
+
 Предыдущее занятие |         &nbsp;          | Следующее занятие
 :----------------:|:-----------------------:|:----------------:
 [Урок 13](LESSON13.MD) | [Содержание](README.MD) | [Урок 15](LESSON15.MD)
