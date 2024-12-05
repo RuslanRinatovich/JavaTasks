@@ -29,3 +29,5 @@
 [Урок 14. Классы HashMap, LinkedHashMap и TreeMap](LESSON14.MD)
 
 [Урок 15. Множество Set](LESSON15.MD)
+
+[Урок 16. Класс String](LESSON16.MD)
