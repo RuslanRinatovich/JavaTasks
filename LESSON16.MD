@@ -398,6 +398,99 @@ true
 
 <details>
 
+<summary>Методы String для поиска и получения подстрок</summary>
+
+# Методы String для поиска и получения подстрок
+
+
+## Методы для поиска подстрок
+
+Всего в `String` три метода для поиска подстроки:
+* `boolean contains(String other)` возвращает `true`, если подстрока будет обнаружена в любом месте строки, иначе `false`;
+* `boolean startsWith(String other)` вернёт `true`, если подстрока находится в начале строки, иначе `false`;
+* `boolean endsWith(String other)` вернёт `true`, если подстрока в конце строки, иначе `false`.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println("раз два три".contains("раз"));    // true
+        System.out.println("раз два три".contains("два"));    // true
+        System.out.println("раз два три".contains("три"));    // true
+
+        System.out.println("раз два три".startsWith("раз"));  // true
+        System.out.println("раз два три".startsWith("два"));  // false
+        System.out.println("раз два три".startsWith("три"));  // false
+
+        System.out.println("раз два три".endsWith("раз"));    // false
+        System.out.println("раз два три".endsWith("два"));    // false
+        System.out.println("раз два три".endsWith("три"));    // true
+	}
+}
+```
+```
+Результат
+
+true
+true
+true
+true
+false
+false
+false
+false
+true
+```
+
+
+## Методы для получения подстрок
+
+Часто возникает необходимость не только найти подстроку, но и получить её. 
+Это может понадобиться, например, чтобы создать инициалы из имени и отчества — из строк в этом случае нужно взять только первые символы.
+Для решения таких задач в классе `String` предусмотрены методы `String substring(int beginIndex, int endIndex)` и 
+`String substring(int beginIndex)`. Они принимают индексы и возвращают искомую подстроку или символ. 
+
+Разберём их. 
+* `String substring(int beginIndex)`
+
+Если передать в метод `String substring(int beginIndex)` один индекс `beginIndex`, то он вернёт все символы, начиная от этого индекса и до самого конца строки.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println("abcde".substring(3)); 
+    }
+}
+```
+
+Элемент `"d"` идёт в строке под индексом `3`, и после него есть только элемент `"e"`, поэтому метод вернул подстроку `"de"`.
+
+![img_4.png](img_4.png)
+
+* `String substring(int beginIndex, int endIndex)`
+
+Второй вариант — передать в `substring()` два индекса: не только начальный `beginIndex`, но и конечный `endIndex`. 
+В этом случае метод вернёт подстроку, начиная от символа с `beginIndex` и заканчивая символом с индексом `endIndex-1`. Символ с индексом `endIndex` исключается из результата.
+
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println("abcde".substring(1, 5));
+    }
+} 
+```
+
+Будет напечатана подстрока `"bcde"`. Обратите внимание, что несмотря на то, что индекс `5` находится за пределами строки, 
+ошибки исключения не будет, так как символ под индексом `4` входит в строку.
+
+![img_5.png](img_5.png)
+
+
+</details>
+
+
+<details>
+
 <summary>Задание 1</summary>
 
 # Задание 1
@@ -466,24 +559,49 @@ public class TextEditor {
 
 # Задание 3
 
-В отделах кадров часто требуется искать работников по первым буквам фамилии.
-От перебора бумажных картотек уже отказались — все персональные данные загружены в электронную базу. 
-Вам нужно реализовать метод `boolean startsWith(String initial, String other)`,
-который возвращает `true`, если фамилия работника `initial` начинается с подстроки `other`, иначе `false`.
+Напишите метод `int numberOfRepeats(String text, String substring)`, который будет возвращать число повторения подстроки `substring` в переданном тексте text. 
+Пример
 
 ```java
-public class SubstringFunctions {
-    public boolean startsWith(String initial, String other) {
-        ... // реализуйте метод
+numberOfRepeats("раз два три, раз два три", "раз"); // вернёт 2
+numberOfRepeats("Hello, world!", "goodbye"); // вернёт 0 
+```
+
+`Practicum.java`
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        FindRepeats check = new FindRepeats();
+        int count = check.numberOfRepeats("раз, раз, раз", "раз");
+        System.out.println(count);
     }
 }
 
 ```
 
+`FindRepeats.java`
+
+```java
+public class FindRepeats {
+    int numberOfRepeats(String text, String substring) {
+
+    }
+}
+
+
+```
+
+
 ## Подсказка
 
-* Чтобы проверить содержание подстроки в строке нужно вызвать для `initial метод indexOf()`, в который передать other.
-* Если вызов `indexOf()` вернёт значение `0`, то метод вернёт `true`, иначе `false` — это нам и нужно.
+* Для хранения числа повторений создайте переменную. Искать повторы поможет метод `contains()`. 
+Также понадобится цикл, который будет продолжаться до тех пор, 
+пока не найдены все повторения. 
+Это будет выглядеть так — `while (text.contains(substring))`.
+* Внутри тела цикла нужно считать повторы `count++` и менять значение `text`, удаляя из него текст, где уже были найдены повторения.
+* Преобразовать текст нужно через методы `substring()` и `indexOf()`. Конструкция `text.indexOf(substring)` + `substring.length()` вернёт индекс символа, 
+следующего за найденной подстрокой. Начиная с этого символа, нужно вернуть остаток текста через `substring()`.
 
 </details>
 
@@ -494,30 +612,98 @@ public class SubstringFunctions {
 
 # Задание 4
 
-Теперь вам нужно реализовать метод `boolean endsWith(String initial, String other)` — для поиска не по началу слова, а по окончанию. 
-Метод должен возвращать true, если строка `initial` заканчивается на строку `other`, иначе `false`.
-Например, для сочетания «жираф» и «раф», результат должен быть `true`, так как строка «жираф» заканчивается на слово «раф», 
-а вот для сочетания «кошка» и «каша» должно вернуться `false`.
+
+Маленькие дети часто забывают, что нужно начинать новое предложение с большой буквы. Помогите им! Реализуйте метод `capitalize()`. 
+Он должен переводить первый символ в переданной строке в верхний регистр при помощи метода `toUpperCase()` и возвращать полученную строку.
+
+`Practicum.java`
 
 ```java
-public class SubstringFunctions {
-    public boolean endsWith(String initial, String other) {
-        ... // реализуйте метод
+public class Practicum {
+    public static void main(String[] args) {
+        Capitalizator check = new Capitalizator();
+        System.out.println(check.capitalize("я не волшебник, я только учусь!"));
     }
 }
 
 ```
 
+`Capitalizator.java`
+
+```java
+public class Capitalizator {
+    public String capitalize(String str) {
+        
+    }
+}
+
+
+```
+
 ## Подсказка
 
-* Чтобы написать алгоритм, возьмите конкретный пример. Допустим, у вас есть строки «ик» и «котик». 
-Для начала определить, начиная с какой позиции первое входит во второе. 
-Индекс вхождения `other` в `initial` определим через `initial.lastIndexOf(other)`. Получили `3`.
-* Обратите внимание на то, каким образом соотносятся длины строк initial и other. Сколько нужно прибавить к 3, чтобы получилась длина строки «котик», то есть 5? 
-Это значение всегда будет равно длине строки `other`.
-* Остаётся только сравнить сумму найденного индекса и длины окончания с длиной начальной строки `initial.length()`.
+* Первый символ в строке нужно взять через `substring(0,1)` и перевести в верхний регистр через `toUpperCase()`.
+* Затем заглавный символ нужно прибавить к оставшейся строке. Получить её позволит `substring(1)`.
 
 </details>
+
+
+<details>
+
+<summary>Задание 5</summary>
+
+# Задание 5
+
+Опечатки и орфографические ошибки — проклятье любых текстов.
+Бьёмся об заклад, в нашем курсе вам тоже попадались эти субъекты! 
+Поэтому предлагаем вам реализовать программу автозамены. Она должна будет исправлять заранее известные недоработки в тексте.
+
+Реализуйте метод `String fixText(String text)`. Он должен:
+* Исправлять кавычки `"„"` и `"“"` на `"«"` и `"»"`.
+* Убирать опечатку в слове `"цевилизаций"` (на `"цивилизаций"`).
+* Убирать лишние символы в начале и в конце строки.
+* Начинать строку с большой буквы. Обратите внимание, мы уже добавили в код ранее написанный вами метод `String capitalize(String str)`.
+
+`Practicum.java`
+
+```java
+public class TextFixer {
+
+    public String capitalize(String str) {
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    public String fixText(String text) {
+        // Реализуйте этот метод
+         
+    }
+
+    public static void main(String[] args) {
+
+        String text = "    история каждой из крупных галактических цевилизаций может быть разделена на три различные, " +
+                "ярко выраженные фазы: Борьба за выживание, Любопытство и Утонченность, также именуемые фазами " +
+                "„Как?“, „Зачем?“ и „Где?“. Пример: если для первой фазы характерен вопрос: „Как бы нам поесть?“," +
+                " а для второй „Зачем мы едим?“, то третья отличается вопросом: „Где бы нам лучше поужинать?“.   ";
+
+        var textFixer = new TextFixer();
+        var fixedText = textFixer.fixText(text);
+        System.out.println(fixedText);
+    }
+}
+
+
+```
+
+## Подсказка
+
+* Вызов метода `trim()`, чтобы убрать начальные и конечные пробелы, и методов `replace()` для замены можно объединить в цепочку вызовов.
+* Чтобы заменить кавычки на правильные, нужно два вызова `.replace("„", "«").replace("“", "»")`. 
+Ещё один вызов `.replace("цевилизаций", "цивилизаций")` требуется для замены опечатки на правильный результат.
+* Можно сразу применить `capitalize()` к результату вызова остальных методов, а можно сначала сохранить промежуточный результат,
+а потому передать его в `capitalize()`. В любом случае не забудьте, что текст должен начинаться с заглавной буквы.
+
+</details>
+
 
 
 
