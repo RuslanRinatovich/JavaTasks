@@ -31,3 +31,6 @@
 [Урок 15. Множество Set](LESSON15.MD)
 
 [Урок 16. Класс String](LESSON16.MD)
+
+[Урок 17. Класс StringBuilder](LESSON17.MD)
+
