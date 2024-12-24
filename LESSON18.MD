@@ -631,6 +631,453 @@ public class Practicum {
 
 <details>
 
+## Получаем информацию об исключении в блоке catch
+
+Стек-трейс появляется, если в коде не настроена обработка исключений. Если же ошибка поймана 
+с помощью блока `try — catch`, то выполнится код в блоке `catch` и никакой информации об ошибке
+в терминале не будет. В этом случае, чтобы найти ошибку и внести правки в код, нужно самостоятельно 
+получить информацию об исключении. Это можно сделать с помощью методов классов 
+`Throwable` и `StackTraceElement`. 
+
+### Методы printStackTrace()
+
+Самый простой способ получить сразу всю информацию об ошибке — 
+вызвать метод `printStackTrace()` класса `Throwable`. 
+Допустим, в коде настроена такая обработка ошибок.
+
+
+```java
+public class PrintStackTraceExample {
+    public static void main(String[] args) {
+        try {
+            calculate();
+        } catch (ArithmeticException exception) {
+            System.out.println("Произошла ошибка!"); // непонятно, что за ошибка и где
+        }
+    }
+
+    public static int calculate() {
+        return 10 / 0;
+    }
+}
+```
+Из вывода в блоке catch непонятно, что произошло. 
+Заменим печать на вызов метода `printStackTrace()`.
+
+```java
+public class PrintStackTraceExample {
+    public static void main(String[] args) {
+        try {
+            calculate();
+        } catch (ArithmeticException exception) {
+            exception.printStackTrace(); // будет выведен стек-трейс ошибки
+        }
+    }
+
+    public static int calculate() {
+        return 10 / 0;
+    }
+}
+```
+
+![img_8.png](img_8.png)
+
+Теперь на экран будет выведена информация об обработанной ошибке. 
+Так исключение будет легче найти и исправить.
+
+### Метод getMessage()
+
+Можно также получить в `catch` короткое сообщение с описанием ошибки, 
+например такое — `/ by zero`. Для этого понадобится другой метод `Throwable` — `getMessage()`.
+
+```java
+public class GetMessageExample {
+   public static void main(String[] args) {
+        try {
+            calculate();
+        } catch (ArithmeticException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    public static int calculate() {
+        return 10 / 0;
+    }
+}
+```
+
+![img_9.png](img_9.png)
+
+Из такого вывода `catch` можно понять, что за ошибка произошла, но не видно её причину и местоположение. 
+
+Использовать вызов `getMessage()` можно, только если при генерации 
+исключений были использованы конструкторы `Throwable` с параметром `String message`. 
+То есть в исключение была передана короткая информация `message` с его описанием. 
+Если такого сообщения нет — то вызов `getMessage()` вернёт `null`. 
+Поэтому лучше не использовать результат `getMessage()`, например для сравнения с помощью `equals()`.
+Иначе можно получить ещё одно исключение, на этот раз `NullPointerException`.
+
+```java
+class GetMessageExampleEqualsException {
+    public static void main(String[] args) {
+        try {
+            System.out.println(parseIntegerWithOffset("19"));
+        } catch (Exception exception) {
+            if (exception.getMessage().equals("out of bounds")) { // getMessage возвращает null
+                System.out.println("Произошёл выход за границы!");
+            }
+        }
+    }
+
+    public static int parseIntegerWithOffset(String input) {
+        return Integer.parseInt(input, 10, 12, 10);
+    }
+}
+```
+
+![img_10.png](img_10.png)
+
+В исключении `IndexOutOfBoundsException` нет короткого описания ошибки `message`, 
+поэтому вызов `getMessage()` для него возвращает `null`. В итоге при сравнении с помощью `equals()` 
+выбрасывается `NullPointerException`. 
+Лучше избегать такого использования `getMessage()` и по возможности обрабатывать конкретное исключение.
+
+### getStackTrace() и методы StackTraceElement
+
+Доступ к информации, которую выводит на экран `printStackTrace()`, предоставляет другой метод 
+класса `Throwable` — `getStackTrace()`. В частности, `getStackTrace()` 
+возвращает массив элементов, представленных классом `StackTraceElement`. 
+С помощью сочетания `getStackTrace()` и методов класса `StackTraceElement` можно упростить поиск исключения
+и получить только определённую информацию о нём в нужном формате. 
+
+В `StackTraceElement` нас интересуют несколько методов. Это методы:
+* `getClassName()` — 
+он возвращает название класса, где произошло исключение
+* `getMethodName()` — позволяет 
+получить имя вызванного при этом метода
+* `getFileName()` — подскажет имя файла, 
+* `getLineNumber()` — отобразит номер линии в файле. 
+
+Есть и другие методы с похожей функциональностью — их можно посмотреть 
+в [документации](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/StackTraceElement.html) или увидеть в подсказке IDEA.
+
+Связка `getStackTrace()` и методов `StackTraceElement` работает так.
+
+> После того как метод `getStackTrace()` возвращает массив данных об исключении, 
+можно пройтись по нему циклом, чтобы отобразить нужную информацию с помощью методов 
+`StackTraceElement`. Например, вот так.
+
+```java
+public class StackTraceExample {
+public static void main(String[] args) {
+        try {
+            calculate1();
+        } catch (ArithmeticException exception) {
+            for (StackTraceElement stack : exception.getStackTrace()) {
+                System.out.println(String.format("Класс: " + stack.getClassName() + ", " +
+                        "метод: " + stack.getMethodName() + ", " +
+                        "имя файла: " + stack.getFileName() + ", " +
+                        "строка кода: " + stack.getLineNumber()));
+            }
+        }
+    }
+
+    public static void calculate1() {
+        calculate2();
+    }
+
+    public static void calculate2() {
+        System.out.println(10 / 0);
+    }
+}
+```
+
+![img_11.png](img_11.png)
+
+В итоге мы и обработали ошибки, и получили её стек-трейс. 
+Вывод можно отформатировать как угодно, в том числе и аналогично стек-трейсу необработанного исключения.
+
+</details>
+
+<details>
+
+<summary>Создаём своё исключение</summary>
+
+## Создаём своё исключение
+
+В стандартной библиотеке Java описано множество исключений — начиная от ошибок при работе 
+с файлами и сетью и критических сбоев JVM и заканчивая невалидными аргументами. 
+Но число проблемных ситуаций, с которыми разработчик может столкнуться 
+в реальной практике ещё больше. Поэтому в Java есть возможность создания собственных исключений.
+
+![img_12.png](img_12.png)
+
+### Как написать своё исключение
+
+Исключение создаётся точно так же, как и любой другой объект в `Java` — через класс.
+Только класс исключения в обязательном порядке должен быть наследником `Throwable` или его потомков.
+Например, создадим свой класс `InputException` для исключений при выборе 
+пользователями некорректного формата ввода данных.
+
+```java
+public class InputException extends Exception {
+}
+```
+
+Созданное нами исключение наследует от `Exception`, 
+а его суперклассом будет `Throwable`. Значит, при генерации `InputException` 
+будет выбрасываться проверяемая ошибка — в логике кода нужно обязательно предусмотреть её обработку. 
+
+У суперкласса всех исключений Throwable четыре публичных конструктора. 
+* `Throwable()` — без параметров,
+* `Throwable(String message)` — с передачей короткого описания ошибки, 
+* `Throwable(String message, Throwable cause)` — с передачей текста об ошибке и информации о её причине, 
+* `Throwable(Throwable cause)` — только с информацией о причине.
+
+Чтобы использовать 
+их в вашем классе исключения, их нужно переопределить.
+
+```java
+public class InputException extends Exception {
+    public InputException() {
+    }
+
+    public InputException(final String message) {
+        super(message);
+    }
+
+    public InputException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public InputException(final Throwable cause) {
+        super(cause);
+    }
+}
+```
+
+Здесь для примера переопределены сразу все четыре конструктора — 
+однако можно оставить только те, которые нужны для целей вашей программы, или добавить любые свои. 
+
+### Ключевое слово throw
+
+Только создать и описать исключение недостаточно — нужно сообщить о нём JVM. 
+Для этого служит ключевое слово `throw` (англ. «бросать, выбрасывать») — оно позволяет 
+сгенерировать исключение. Это происходит с помощью создания экземпляра класса исключения
+с нужными параметрами.
+
+
+```java
+ throw new UserInputException("Ошибка ввода!"); // сгенерировали исключение
+```
+
+Если с помощью `throw` генерируется проверяемое исключение,
+то нужно сразу настроить его обработку. Это будет выглядеть так. 
+
+```java
+try {
+    if (...) { // если возникла определённая ситуация
+        throw new ThrowableClass(parameters); // сгенерировали исключение   
+    }
+}
+catch (ThrowableClass e) {
+    // настроили обработку исключения, сгенерированного в try
+}
+```
+
+При генерации исключения можно использовать любой доступный конструктор класса. 
+Удобнее всего передавать
+в качестве параметра сообщение об ошибке, которое `catch` потом
+сможет вернуть с помощью метода `getMessage()`.
+
+### Добавляем в код своё исключение и настраиваем его обработку
+
+Разберём на примере, как добавить в код собственное исключение и настроить его обработку.
+Допустим, есть метод `printRangeInteger(final String inputString, final int from, final int to)`. 
+Он принимает на вход строку, которую должен преобразовать в целое число, а также диапазон значений 
+от `from` до `to`, 
+внутри чего должно быть это число. 
+Сейчас в методе не настроена обработка исключений. Запустите его.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        printRangeInteger("10", 0, 100);
+        printRangeInteger("-10", 0, 100);
+        printRangeInteger("110", 0, 100);
+        printRangeInteger("abc", 0, 100);
+    }
+
+    public static void printRangeInteger(final String inputString, final int from, final int to) {
+        final int input = Integer.parseInt(inputString);
+        System.out.println(input);
+    }
+}
+```
+
+![img_13.png](img_13.png)
+
+Из-за того, что в метод была передана строка с буквами вместо цифр, 
+программа выбросила исключение `NumberFormatException`. 
+Для начала нужно добавить его обработку.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        printRangeInteger("10", 0, 100);
+        printRangeInteger("-10", 0, 100);
+        printRangeInteger("110", 0, 100);
+        printRangeInteger("abc", 0, 100);
+    }
+
+    public static void printRangeInteger(final String inputString, final int from, final int to) {
+        try {
+            final int input = Integer.parseInt(inputString);
+            System.out.println(input);
+        } catch (NumberFormatException exception) {
+            System.out.println("Ошибка ввода - введено не число!");
+        }
+    }
+}
+```
+![img_14.png](img_14.png)
+
+Теперь код не выбрасывает исключение, однако печатает числа за пределами диапазона. 
+Как раз в таком случае нам понадобится собственное исключение. 
+
+```java
+class InputException extends Exception {
+    public InputException() {
+    }
+
+    public InputException(final String message) {
+        super(message);
+    }
+}
+```
+
+Теперь добавим его обработку. В случае если переданное число выходит за нижнюю границу диапазона, 
+сгенерируем исключение с текстом `"Введённое число слишком маленькое!"`, а если 
+за верхнюю — `"Введённое число слишком большое!"`. 
+А также добавим второй блок `catch` с вызовом метода `getMessage()`.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        printRangeInteger("10", 0, 100);
+        printRangeInteger("-10", 0, 100);
+        printRangeInteger("110", 0, 100);
+        printRangeInteger("abc", 0, 100);
+    }
+
+    public static void printRangeInteger(final String inputString, final int from, final int to) {
+        try {
+            final int input = Integer.parseInt(inputString);
+            if (input < from) {
+                throw new InputException("Введённое число слишком маленькое!");
+            }
+            if (input > to) {
+                throw new InputException("Введённое число слишком большое!");
+            }
+            System.out.println(input);
+        } catch (NumberFormatException exception) {
+            System.out.println("Ошибка ввода - введено не число!");
+        } catch (InputException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+}
+
+class InputException extends Exception {
+    public InputException() {
+    }
+
+    public InputException(final String message) {
+        super(message);
+    }
+}
+```
+
+![img_15.png](img_15.png)
+
+### Прокачиваем своё исключение
+
+Не стоит забывать, что исключение — это обычный класс, в него можно добавлять любые другие методы, 
+поля и конструкторы. Расширим класс `InputException`. 
+Добавим в него новое поле для хранения неправильно введённого числа и метод `getDetailMessage()`,
+который будет возвращать строку следующего формата: 
+`сообщение, переданное в исключение` + `=` + в`веденное неверно число`. 
+Код класса исключения получится таким:
+
+```java
+public class InputException extends Exception {
+    private final int inputValue;
+
+    public InputException(final String message, final int inputValue) {
+        super(message);
+        this.inputValue = inputValue;
+    }
+
+    public String getDetailMessage() {
+        return getMessage() + " = " + inputValue;
+    }
+}
+```
+
+Теперь при исключении можно будет увидеть не только сообщение об ошибке,
+но и то число, которое ввёл пользователь.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        printRangeInteger("10", 0, 100);
+        printRangeInteger("-10", 0, 100);
+        printRangeInteger("110", 0, 100);
+        printRangeInteger("abc", 0, 100);
+    }
+
+    public static void printRangeInteger(final String inputString, final int from, final int to) {
+        try {
+            final int input = Integer.parseInt(inputString);
+            if (input < from) {
+                throw new InputException("Введённое число слишком маленькое!", input);
+            }
+            if (input > to) {
+                throw new InputException("Введённое число слишком большое!", input);
+            }
+            System.out.println(input);
+        } catch (NumberFormatException exception) {
+            System.out.println("Ошибка ввода - введено не число!");
+        } catch (InputException exception) {
+            System.out.println(exception.getDetailMessage());
+        }
+    }
+}
+
+class InputException extends Exception {
+    private final int inputValue;
+
+    public InputException(final String message, final int inputValue) {
+        super(message);
+        this.inputValue = inputValue;
+    }
+
+    public String getDetailMessage() {
+        return getMessage() + " = " + inputValue;
+    }
+}
+```
+
+![img_16.png](img_16.png)
+
+Можно добавить и любые другие параметры. Главное учесть, что работать с ними можно только тогда,
+когда в коде настроена обработка созданного вами исключения.
+
+</details>
+
+
+<details>
+
 <summary>Задание 1</summary> 
 
 ## Задание 1
@@ -660,6 +1107,69 @@ public class Practicum {
 
 * Оберните код метода `parseStringToURI()` в конструкцию `try...catch`.
 * В качестве типа отлавливаемого исключения укажите `Throwable`.
+
+</details>
+
+
+
+<details>
+
+<summary>Задание 2</summary> 
+
+## Задание 2
+
+Напишите класс исключений `UserInputException`. В нём переопределите конструктор
+без параметров и конструктор с коротким текстом об ошибке. Класс должен быть наследником `Exception`.
+
+```java
+// допишите код UserInputException
+ 
+
+} 
+ public class Practicum {
+     public static void main(final String[] args) {
+        final UserInputException userInputException = new UserInputException("Ошибка ввода!");
+        System.out.println(userInputException.getMessage());
+     }
+}
+
+
+```
+
+### Подсказки
+
+* Проверьте, что родительским классом является `Exception` и не забыт конструктор без параметров.
+
+</details>
+
+
+<details>
+
+<summary>Задание 3</summary> 
+
+## Задание 3
+
+Напишите класс исключений `UserInputException`. В нём переопределите конструктор
+без параметров и конструктор с коротким текстом об ошибке. Класс должен быть наследником `Exception`.
+
+```java
+// допишите код UserInputException
+ 
+
+} 
+ public class Practicum {
+     public static void main(final String[] args) {
+        final UserInputException userInputException = new UserInputException("Ошибка ввода!");
+        System.out.println(userInputException.getMessage());
+     }
+}
+
+
+```
+
+### Подсказки
+
+* Проверьте, что родительским классом является `Exception` и не забыт конструктор без параметров.
 
 </details>
 
