@@ -199,6 +199,470 @@ public class Practicum {
 
 </details>
 
+<details>
+
+<summary>Анатомия стек-трейса</summary>
+
+## Анатомия стек-трейса
+
+Если в программе не настроена обработка исключений, то в результате сбоя в терминале появится 
+длинное сообщение об ошибке. В нём содержится ключевая информация, что за исключение произошло, 
+где и почему. Такое сообщение называется **stack trace** (англ. «след стека») — или **стек-трейс**. 
+В этом уроке расскажем, из чего состоят стек-трейсы и как их читать. 
+
+![img_3.png](img_3.png)
+
+Что такое стек
+
+**Стек** — это структура данных, которая реализована по принципу **_lаst in, first out**_ 
+(англ. «последний зашёл, первый вышел») или сокращённо **LIFO**. Это означает, что элемент, 
+который добавлен в стек последним, будет взят первым. 
+
+Посмотрим на примере. Представьте, посетители читального зала перед уходом должны вернуть взятую книгу 
+— положить на стол библиотекарю. В итоге образуется стопка книг. 
+Выше всего в этой стопке будет лежать книга того, кто ушёл последним, и именно её библиотекарь
+первой поставит на место. 
+А вот книга, сданная первой, наоборот, вернётся на свою полку последней. Именно так работает стек. 
+
+![img_4.png](img_4.png)
+
+### Внутри стек-трейса
+
+Последовательность действий при выполнении программы обрабатывается внутри 
+JVM как раз в виде стека. Каждый вызов метода при выполнении программы записывается 
+как элемент класса `StackTraceElement`. Когда выполнение метода завершается, информация о нём удаляется из стека.
+
+Если исключение прерывает работу программы, то один или несколько методов  
+не могут завершиться и информация о них остаётся в памяти JVM в виде массива `StackTraceElement[]`. 
+Перед тем как завершить программу, JVM печатает содержимое этого массива. 
+Посмотрим, как это происходит на примере. Запустите такой код.
+
+```java
+public class Practicum {
+    public static void main(String[] args) { // вызов main
+        calculate1(); // вызов calculate1() 
+    }
+
+    public static void calculate1() {
+        calculate2();  // вызов calculate2()
+    }
+
+    public static void calculate2() {
+        calculate3(); // вызов calculate3()
+    }
+
+    public static void calculate3() {
+        calculate4(); // вызов calculate4()
+    }
+
+    public static void calculate4() {
+        System.out.println(10 / 0); // исключение - методы не могут завершить работу
+    }
+}
+```
+
+Из-за деления на ноль в методе `calculate4()` произошло исключение. В терминале мы видим его стек-трейс.
+
+```java
+Exception in thread "main" java.lang.ArithmeticException: / by zero
+    at Practicum.calculate4(Practicum.java:19)
+    at Practicum.calculate3(Practicum.java:15)
+    at Practicum.calculate2(Practicum.java:11)
+    at Practicum.calculate1(Practicum.java:7)
+    at Practicum.main(Practicum.java:3) 
+```
+
+В первой строке стек-трейса сообщается базовая информация. 
+О том, что исключение произошло в главном потоке — `Exception in thread "main"`, 
+его тип `ArithmeticException` и описание / `by zero` — «деление на ноль». 
+
+Затем в обратном порядке (так как мы имеем дело со стеком) идёт история вызовов методов — первым будет идти метод, 
+где завершилось выполнение программы. При этом указывается класс каждого метода, его файл и местоположение в нём.
+
+В нашем примере, перед тем, как произошла ошибка, был вызван метод `calculate4()` в классе `Practicum` на строке 
+19 в файле `Practicum.java`, перед ним `calculate3()` в классе `Practicum` на строке 
+15 также в файле `Practicum.java` и так далее. Первым был запущен метод `main` — информация о нём, 
+соответственно, на последней строке.
+
+</details>
+
+
+<details>
+
+<summary>Обработка исключений</summary>
+
+## Обработка исключений
+
+Чтобы контролировать реакцию программы на ошибки в ходе её выполнения,
+нужно настроить в коде **обработку исключений**. В этом уроке научим вас, как это сделать. 
+
+![img_5.png](img_5.png)
+
+### Когда нужна обработка исключений
+
+Изучите следующий код. Сейчас он отработает без ошибок.
+
+```java
+class IntegerConverter {
+    public static int convert(final String input) {
+        return Integer.parseInt(input, 10);
+    }
+}
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(IntegerConverter.convert("10"));
+    }
+}
+```
+
+Но если передать в метод `convert(final String input)` некорректную строку — возникнет исключение.
+
+```java
+class IntegerConverter {
+    public static int convert(final String input) {
+        return Integer.parseInt(input, 10);
+    }
+}
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(IntegerConverter.convert("10"));
+        System.out.println(IntegerConverter.convert("abc10"));
+    }
+}
+
+```
+
+В терминале появится стек-трейс: `Exception in thread "main" java.lang.NumberFormatException: 
+For input string: "abc10"` — англ. «Исключение в потоке `"main"` типа `NumberFormatException` 
+для входной строки: `"abc10"`». 
+Ошибка произошла, так как переданная строка `"abc10"` содержит не только цифры, но и буквы.
+Перед нами **непроверяемое исключение** — компилятор заранее не подскажет, 
+что тут может случиться ошибка. Однако можно добавить в код его обработку. 
+
+### Конструкция try — catch
+
+Для обработки исключений существует специальная конструкция из ключевых слов `try` (англ. «пробовать, пытаться») 
+и `catch` (англ. «ловить»). В `try` передаётся код, из-за которого может произойти исключение. 
+В `catch` в качестве аргумента — тип ошибки, а в тело — код, 
+который выполнится, если произойдёт исключение, указанное в `try`. В коде `try` — `catch` выглядит так:
+
+```java
+try {
+    ... // код, из-за которого может произойти исключение
+} catch (Throwable throwable) { // параметр - тип возможного исключения
+    // код, который выполнится, если произойдёт исключение указанного типа
+}
+```
+
+Обработка исключения настраивается исходя из логики программы. Например, её можно добавить в тело метода. 
+В случае ошибки при этом можно настроить возврат какого-то значения по умолчанию.
+
+```java
+class IntegerConverter {
+    public static int convert(final String input) {
+        try {
+            return Integer.parseInt(input, 10); // если исключения нет - вернётся число
+        } catch (Throwable exception) { 
+            return 0; // если поймано исключение - вернётся 0
+        }
+    }
+}
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(IntegerConverter.convert("10"));
+        System.out.println(IntegerConverter.convert("abc10"));
+    }
+}
+
+```
+
+![img_6.png](img_6.png)
+
+Плюс такого подхода в том, что в любом случае вернётся значение, 
+с которым можно работать. Минус в том, что не получится определить, 
+где нулевое значение возникло в результате исключения, а где было передано в метод. 
+
+Другой вариант — добавить обработку исключения в тот метод, 
+который вызывает код, где оно может произойти. Например, в метод `main`.
+
+
+```java
+class IntegerConverter {
+    public static int convert(final String input) { 
+        return Integer.parseInt(input, 10);
+    }
+}
+
+public class Practicum {
+    public static void main(String[] args) { 
+        try {
+            System.out.println(IntegerConverter.convert("10")); // печатаем число
+        } catch (Throwable exception) {
+            // или выводим сообщение об ошибке
+            System.out.println("Строка для преобразования не является целым числом.");
+        }
+        try {
+            System.out.println(IntegerConverter.convert("abc10"));
+        } catch (Throwable exception) {
+            System.out.println("Строка для преобразования не является целым числом.");
+        }
+    }
+}
+```
+
+Нельзя сказать, что тот или иной вариант лучше или хуже. 
+Поэтому логика обработки исключений через блок `try — catch` остаётся на выбор разработчика. 
+
+Какой код будет внутри блоков `catch` — тоже решает сам разработчик.
+Можно уведомить пользователя об ошибке, попросить его подождать, 
+повторить попытку или выйти. Чаще всего с помощью `catch` принято отображать 
+или сохранять информацию об ошибке. 
+
+### Множественный catch
+
+До этого момента мы использовали в `catch` тип параметра `Throwable`. Это позволяло нам сразу обрабатывать 
+все исключения, производные от него.
+То есть `catch` ловил все ошибки, которые могли бы произойти в `try`, включая ошибки `JVM`. Кажется, 
+что так можно создать универсальный обработчик исключений. Однако запустим код с такой обработкой ещё раз.
+
+```java
+import java.net.URI;
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(parseStringToUri("https://ya.ru"));
+        System.out.println(parseStringToUri(null));
+        System.out.println(parseStringToUri(":/"));
+    }
+
+    public static URI parseStringToUri(final String input) {
+        try {
+            return new URI(input);
+        } catch (Throwable exception) {
+            System.out.println("Произошла ошибка!");
+        }
+        return null;
+    }
+}
+```
+
+При любом исключении мы теперь всегда видим одно и то же сообщение — `Произошла ошибка!`, 
+однако ошибки при этом могут отличаться.
+К примеру, в первом случае возникает исключение `NullPointerException` — строка не инициализирована, 
+а во втором `URISyntaxException` — строка не может быть преобразована в идентификатор. 
+Однако при использовании общей обработки с типом `Throwable` не получится узнать, что конкретно 
+пошло не так и как это можно исправить.
+
+Чтобы обрабатывать разные типы исключений, которые может сгенерировать метод или конструктор,
+нужно добавить несколько блоков `catch`. Каждый из них будет отвечать за конкретное исключение 
+и выдавать соответствующий ответ для него.
+
+```java
+import java.net.URI;
+import java.net.URISyntaxException;
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(parseStringToUri("https://ya.ru"));
+        System.out.println(parseStringToUri(null));
+        System.out.println(parseStringToUri(":/"));
+    }
+
+    public static URI parseStringToUri(final String input) {
+        try {
+            return new URI(input);
+        } catch (URISyntaxException exp) { // ловим исключение URISyntaxException
+            System.out.println("Ошибка: неверный синтаксис URI!");
+        } catch (NullPointerException exp) { // ловим исключение NullPointerException
+            System.out.println("Ошибка: передан неинициализированный объект!");
+        }
+        return null;
+    }
+}
+```
+
+Теперь гораздо понятнее, где какая произошла ошибка. Это позволит быстрее исправить её. 
+Если же отлавливать исключения по параметру `Throwable` 
+или даже `Exception` — то придётся перебирать множество вариантов — от неправильного ввода до переполненной памяти.
+
+--- 
+
+Даже такая простая операция, как добавление нового элемента в хеш-таблицу может сгенерировать исключение. 
+Чтобы было понятно, что пошло не так — добавим обработку конкретных исключений.
+Для NullPointerException выведите текст — «Реализация не поддерживает неинициализированные объекты.».
+Для UnsupportedOperationException — сообщение «Реализация не поддерживает добавление новых объектов.».
+
+```java
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(addToMap(new HashMap<>(), "test", "test"));
+        System.out.println(addToMap(new HashMap<>(), null, null));
+
+        System.out.println(addToMap(new TreeMap<>(), "test", "test"));
+        System.out.println(addToMap(new TreeMap<>(), null, null));
+
+        System.out.println(addToMap(Map.of(), "test", "test"));
+    }
+
+    public static Map<String, Object> addToMap(final Map<String, Object> storage, 
+                                               final String key, final Object value) {
+        
+       try {
+            storage.put(key, value);
+            
+        } catch (NullPointerException exp) { // ловим исключение URISyntaxException
+            System.out.println("Реализация не поддерживает неинициализированные объекты.");
+        } catch (UnsupportedOperationException exp) { // ловим исключение NullPointerException
+            System.out.println("Реализация не поддерживает добавление новых объектов.");
+        }
+        catch (Throwable exception) {
+            return null;
+        }
+      return storage;
+    }
+}
+```
+
+### Порядок обработки исключений
+
+При обработке исключений важно соблюдать правильную последовательность. 
+Сначала обрабатываются исключения в классах-наследниках,
+а только потом родительские. 
+
+Например, исключение `ClassCastException` является дочерним от `RuntimeException`, 
+который наследуется от базового Exception. В таком порядке их и нужно поместить 
+в блоки catch. Код, где нарушен порядок обработки исключений, не будет скомпилирован.
+
+```java
+
+class Practicum {
+    public static void main(String[] args) {
+        System.out.println(convertToString(0));
+    }
+
+    private static String convertToString(Object x) {
+        try {
+            return (String) x;
+        } catch (Exception e) {
+            System.out.println("Произошла неизвестная ошибка");
+        } catch (RuntimeException e) {
+            System.out.println("Ошибка во время выполнения");
+        } catch (ClassCastException e) {
+            System.out.println("Некорректное приведение типов");
+        }
+        return null;
+    }
+}
+```
+
+![img_7.png](img_7.png)
+
+д
+Корректный порядок будет таким — сначала `ClassCastException`, потом — `RuntimeException`, в конце – `Exception`.
+
+```java
+class Practicum {
+    public static void main(String[] args) {
+        System.out.println(convertToString(0));
+    }
+
+    private static String convertToString(Object x) {
+        try {
+            return (String) x;
+        } catch (ClassCastException e) {
+            System.out.println("Некорректное приведение типов");
+        } catch (RuntimeException e) {
+            System.out.println("Ошибка во время выполнения");
+        } catch (Exception e) {
+            System.out.println("Произошла неизвестная ошибка");
+        }
+        return null;
+    }
+}
+
+```
+
+### Объединение исключений с одинаковым выводом
+
+Часто требуется совместить два типа исключений, если инструкции для них являются одинаковыми. 
+Сделать это можно в блоке catch с помощью символа `|`.
+Например, вот такой код:
+
+```java
+import java.util.ArrayList;
+
+public class Practicum {
+    public static void main(String[] args) {
+        try {
+            new ArrayList<String>().add("1");
+        } catch (UnsupportedOperationException exception) {
+            System.out.println("Возникла ошибка, свяжитесь с нами!");
+        } catch (IllegalArgumentException exception) {
+            System.out.println("Возникла ошибка, свяжитесь с нами!");
+        }
+    }
+}
+```
+
+Можно оптимизировать так:
+
+```java
+import java.util.ArrayList;
+
+public class Practicum {
+    public static void main(String[] args) {
+        try {
+            new ArrayList<String>().add("1");
+        } catch (UnsupportedOperationException | IllegalArgumentException exception) {
+            System.out.println("Возникла ошибка, свяжитесь с нами!");
+        }
+    }
+} 
+```
+
+</details>
+
+<details>
+
+<summary>Задание 1</summary> 
+
+## Задание 1
+
+Добавьте обработку исключений при преобразовании строки в URL в метод parseStringToURI(). 
+При ошибке возвращайте значение null.
+
+```java
+import java.net.URI;
+
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(parseStringToURI("https://ya.ru"));
+        System.out.println(parseStringToURI("\\\\"));
+        System.out.println(parseStringToURI(null));
+    }
+
+    public static URI parseStringToURI(final String input) {
+        return new URI(input);
+    }
+}
+
+
+```
+
+### Подсказки
+
+* Оберните код метода `parseStringToURI()` в конструкцию `try...catch`.
+* В качестве типа отлавливаемого исключения укажите `Throwable`.
+
+</details>
+
    Предыдущее занятие   |         &nbsp;          |   Следующее занятие    
 :----------------------:|:-----------------------:|:----------------------:
  [Урок 17](LESSON17.MD) | [Содержание](README.MD) | [Урок 19](LESSON19.MD) 
