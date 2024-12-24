@@ -1075,6 +1075,322 @@ class InputException extends Exception {
 
 </details>
 
+<details>
+
+<summary>Ключевое слово-предупреждение throws</summary>
+
+## Ключевое слово-предупреждение throws
+
+Чтобы сообщить компилятору, что метод или конструктор может сгенерировать исключение, 
+в Java используется **ключевое слово** `throws`. Разберём, как с ним работать. 
+
+Ключевое слово `throws` созвучно слову `throw`. Однако если `throw` даёт команду
+сгенерировать исключение, то `throws` обозначает, что метод генерирует исключение 
+— то есть внутри него как раз может быть использовано `throw`. 
+Слова `throw` и `throws` — это один и тот же английский глагол ”кидать, выбрасывать”.
+
+### throws в коде
+
+`throws` указывают после круглых скобок метода, который может выбросить исключение.
+После него через пробел идёт имя класса этого исключения. 
+
+```java
+public void methodWithException() throws FirstException {
+     // какой-то код
+    if (какое-то условие) {
+        throw new FirstException(); // сгенерировать исключение
+    }
+    // какой-то код
+}
+```
+
+Такая запись в коде означает, что метод `methodWithException()` 
+может сгенерировать исключение `FirstException`. 
+
+Конструктор класса — это тоже по сути метод, который инициализирует класс,
+и он может вызывать методы, способные сгенерировать исключение.
+Поэтому `throws` может использоваться и в конструкторах. 
+
+```java
+public class PositivePoints {
+    private final int positionX;
+    private final int positionY;
+    
+    public PositivePoints(final int positionX, final int positionY) throws IllegalArgumentException {
+        if (positionX < 0 || positionY < 0) {
+            throw new IllegalArgumentException();
+        }
+        this.positionX = positionX;
+        this.positionY = positionY;
+    }
+
+    public int getPositionY() {
+        return positionY;
+    }
+
+    public int getPositionX() {
+        return positionX;
+    }
+}
+```
+
+### throws и обработка исключений
+
+В первую очередь `throws` используют для указания проверяемых исключений, 
+так как их обработка обязательна и является частью логики приложения. Когда 
+мы вызываем метод, в котором есть указание на проверяемое исключение с 
+помощью `throws`, есть два варианта, как действовать дальше:
+
+* Обернуть этот метод в `try...catch` и добавить логику по обработке 
+или выводу информации об ошибке.
+
+* Переадресовать обработку исключения вызывающему методу или JVM. 
+Для этого нужно добавить `throws` с указанием исключения, которое может произойти,
+в тот метод, что вызывает метод с `throws`. В этом случае обработку 
+этого исключения возьмёт на себя вызывающий метод или же JVM, 
+если это точка запуска программы.
+
+Разберём второй вариант на примере. Изучите код ниже.
+
+```java
+import java.util.Scanner;
+
+class Practicum {
+    // сообщаем JVM, что метод main вызывает метод, который может выбросить исключение
+    public static void main(String[] args) throws NumberShouldBePositiveException {
+        System.out.println(getPositiveInteger("10"));
+        System.out.println(getPositiveInteger("-10"));
+    }
+
+    public static int getPositiveInteger(final String input) 
+            throws NumberShouldBePositiveException { // метод выбрасывает исключение
+        int value = Integer.parseInt(input);
+        if (value < 0) {
+            throw new NumberShouldBePositiveException();
+        }
+        return value;
+    }
+}
+
+class NumberShouldBePositiveException extends Exception {
+}
+```
+
+![img_17.png](img_17.png)
+
+Метод main вызывает метод `getPositiveInteger()`, который может выбросить 
+исключение `NumberShouldBePositiveException`. Поскольку мы не добавляем 
+в код обработку этого исключения, то добавим указание на него в метод в main.
+Обработку исключения в таком случае возьмёт на себя JVM.
+
+Также синтаксис Java позволяет указать после throws несколько типов исключений через запятую, если код метода может их выбросить.
+
+```java
+class Practicum {
+    public static void main(String[] args) {
+        try {
+            System.out.println(getPositiveInteger("10"));
+            System.out.println(getPositiveInteger("abc"));
+        } catch (NumberShouldBePositiveException e) {
+            System.out.println("Число должно быть положительным");
+        } catch (IncorrectInputStringException e) {
+            System.out.println("Необходимо ввести число");
+        }
+    }
+
+    public static int getPositiveInteger(final String input)
+            // указываем исключения через запятую
+            throws NumberShouldBePositiveException, IncorrectInputStringException {
+        try {
+            int value = Integer.parseInt(input);
+            if (value < 0) {
+                throw new NumberShouldBePositiveException();
+            }
+            return value;
+        } catch (NumberFormatException exception) {
+            throw new IncorrectInputStringException();
+        }
+    }
+}
+
+class NumberShouldBePositiveException extends Exception {
+}
+
+class IncorrectInputStringException extends Exception {
+}
+```
+
+![img_18.png](img_18.png)
+
+Если проверяемые исключения всегда должны быть отмечены с помощью `throws`, 
+то для непроверяемых исключений это необязательно, так как они представляют 
+собой ситуацию «у нас всё сломалось», которую невозможно предугадать.
+Однако указание непроверяемых исключений 
+с помощью `throws` является хорошим тоном, потому что помогает сразу определить их.
+
+</details>
+
+<details>
+
+<summary>finally — продвинутая обработка исключений</summary>
+
+## finally — продвинутая обработка исключений
+
+При работе с исключениями может возникнуть ситуация, когда необходимо 
+выполнить какое-то действие вне зависимости от того, произошло ли обрабатываемое 
+исключение или нет. В этом случае к блокам `try` и `catch` добавляется блок 
+с **ключевым словом** `finally` (от англ. «в заключение, напоследок»). 
+
+![img_19.png](img_19.png)
+
+### Принцип работы `finally`
+
+Код в `finally` выполнится в любом из этих трёх случаев:
+
+* если исключения не было;
+* после того, как оно было отловлено в блоке `catch`;
+* после того как исключение произошло, но не было отловлено в `catch`, 
+так как там стоял другой тип.
+
+То есть если в коде есть `finally`, то действие в нём выполнится почти всегда, 
+кроме тех случаев, если в try были вызваны методы, которые инициируют остановку JVM(Это методы `System.exit()` и `Runtime.getRuntime().halt()`.).
+
+```java
+try {
+    // действие, которое может вызвать ошибку
+} catch (Exception exception) {
+    // действие по обработке исключений
+} finally {
+    // действие, которое должно вызываться всегда
+}
+```
+
+Блок `finally` выполнится даже в тех случаях, если в любом из блоков `catch` мы сгенерировали своё исключение.
+
+Блок `finally` нужен при взаимодействии с объектами, 
+которые требуют закрытия после того, как работа с ними завершена. 
+К таким, например, относятся объекты `Scanner`, когда они не созданы от 
+стандартных потоков ввода-вывода (как `System.in`). После завершения операций 
+со `Scanner`, вне зависимости, прошли они успешно или нет, 
+необходимо вызвать метод `.close()`. 
+Как раз в этом случае и подойдёт использование `finally`.
+
+```java
+import java.io.ByteArrayInputStream;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
+class Practicum {
+    public static void main(String[] args) {
+        final Scanner scanner = new Scanner(new ByteArrayInputStream("hello\nworld".getBytes()));
+        try {
+            System.out.println("Первая линия: " + scanner.nextLine());
+            System.out.println("Вторая линия: " + scanner.nextLine());
+            // создано только две линии, следующее получение сгенерирует ошибку
+            System.out.println("Третья линия: " + scanner.nextLine());
+        } catch (NoSuchElementException exception) {
+            System.out.println("Ошибка: линии закончились");
+        } finally {
+            System.out.println("Закрываем сканер");
+            scanner.close();
+        }
+    }
+}
+```
+
+![img_20.png](img_20.png)
+
+### finally без catch
+
+Теперь уберём блок `catch` из примера со `Scanner` и посмотрим, что получится.
+
+```java
+import java.io.ByteArrayInputStream;
+import java.util.Scanner;
+
+class Practicum {
+    public static void main(String[] args) {
+        final Scanner scanner = new Scanner(new ByteArrayInputStream("hello\nworld".getBytes()));
+        try {
+            System.out.println("Первая линия: " + scanner.nextLine());
+            System.out.println("Вторая линия: " + scanner.nextLine());
+            // создано только две линии, следующее получение сгенерирует ошибку
+            System.out.println("Третья линия: " + scanner.nextLine());
+        } finally {
+            scanner.close();
+            System.out.println("Закрываем сканер");
+        }
+    }
+}
+```
+
+![img_21.png](img_21.png)
+
+Поведение кода изменилось. finally всё так же выполняется, 
+но теперь после него генерируется исключение, которое прерывает программу. 
+Это происходит потому, что не настроена обработка ошибки NoSuchElementException 
+при помощи catch. 
+
+Однако блок finally можно использовать и при отсутствии блока catch. 
+Например, в том случае, если вместо непроверяемого исключения будет брошено 
+проверяемое и оно будет отражено в сигнатуре метода с помощью throws.
+Тогда выполнение программы не будет прервано. Использование finally без catch 
+может быть полезным, если нужно выполнить какие-то действия вне зависимости от того, 
+произошло исключение или нет, но при этом его не требуется обрабатывать, 
+так как оно может быть использовано дальше. 
+
+`try — catch в finally`
+
+Если в `finally` произошло исключение, 
+то в терминале вы увидите именно его стек-трейс, 
+а не сообщение об ошибке, обработанной ранее в блоке `catch`. 
+Чтобы избежать подобного, нужно добавить дополнительный обработчик 
+`try...catch` для опасного кода внутрь блока `finally`.
+
+`finally и return`
+
+В блоке `finally` может быть любой код, однако лучше не использовать 
+в нём ключевое слово `return`. Сочетание `finally` и `return` приводит к тому, 
+что нарушается логика программы. Запустите, например, такой код.
+
+```java
+public class Practicum {
+    public static void main(String[] args) {
+        System.out.println(returnFromFinally());
+    }
+
+    public static int returnFromFinally() {
+        try {
+            return calculate(10, 2);
+        } catch (Exception e) {
+            return 1;
+        } finally {
+            return 2;
+        }
+    }
+
+    public static int calculate(int a, int b) {
+        return a / b;
+    }
+}
+```
+
+
+Так как действие в блоке `finally` выполняется последним, из-за `return` метод
+`returnFromFinally()` будет всегда возвращать одно и то же значение 
+(точно так же, как и в проверочном задании в начале урока). 
+
+Если же мы уберём `return` из `finally` (например, заменим на печать любого значения), 
+то восстановится правильная логика — когда код выполнится успешно, 
+то вернется результат вызова `calculate()`, если произошло исключение — то 1. 
+Попробуйте сделать это: исправьте код в блоке `finally` — и оцените результат.
+
+Блок `finally` будет полезен, если необходимо выполнить какое-то завершающее действие 
+в конце вне зависимости, случилась исключительная ситуация или нет.
+Однако используйте его 
+внимательно — без `return` и предупреждая возможные сбои дополнительной обработкой!
+
+</details>
 
 <details>
 
@@ -1262,6 +1578,476 @@ public class FinancialCalculatorException {
 * Убедитесь, что в методах `getDoubleLimited()` и `getIntLimited()` добавлена генерация нужных исключений.
 
 </details>
+
+
+<details>
+
+<summary>Задание 4</summary> 
+
+## Задание 4
+
+Ваш коллега написал программу для хранилища пиццы, но она не работает. Кажется, в коде что-то пропущено — найдите и исправьте это.
+
+```java
+public class TooMuchPizzaException extends Exception {
+}
+```
+
+```java
+public class NotEnoughPizzaException extends Exception {
+}
+```
+
+```java
+public class IncorrectInputException extends Exception {
+    public IncorrectInputException(String message) {
+        super(message);
+    }
+}
+```
+
+```java
+public class PizzaStorage {
+    private final int maxVolume;
+    private int pizzaCount = 0;
+
+    public PizzaStorage(final int maxVolume) {
+      this.maxVolume = maxVolume;
+    }
+
+    public int addPizza(final int count) {
+      if (pizzaCount + count > maxVolume) {
+        throw new TooMuchPizzaException();
+      }
+      pizzaCount += count;
+      return pizzaCount;
+    }
+
+    public int takePizza(final int count) {
+      if (pizzaCount - count < 0) {
+        throw new NotEnoughPizzaException();
+      }
+      pizzaCount -= count;
+      return pizzaCount;
+    }
+
+    public int getPizzaCount() {
+      return pizzaCount;
+    }
+  }
+```
+
+```java
+import java.util.InputMismatchException;
+import java.util.Scanner;
+
+class Practicum {
+
+  private static final Scanner scanner = new Scanner(System.in);
+
+  public static void main(String[] args) {
+    final PizzaStorage storage = new PizzaStorage(10);
+    printActionMenu();
+    String action = scanner.nextLine();
+    while (!"exit".equals(action)) {
+      if ("show".equals(action)) {
+        System.out.println("Количество пиццы на складе: " + storage.getPizzaCount());
+      } else if ("add".equals(action)) {
+        try {
+          add(storage);
+        } catch (TooMuchPizzaException e) {
+          System.out.println("Невозможно добавить такое количество пиццы на склад");
+        }
+      } else if ("take".equals(action)) {
+        try {
+          take(storage);
+        } catch (NotEnoughPizzaException e) {
+          System.out.println("Недостаточное количество пиццы не складе");
+        }
+      }
+      action = scanner.nextLine();
+    }
+  }
+
+  public static void add(final PizzaStorage storage) {
+    try {
+      final int count = getPositiveNumber("Введите количество пиццы для добавления => ");
+      storage.addPizza(count);
+    } catch (IncorrectInputException exception) {
+      System.out.println("Произошла ошибка: " + exception.getMessage());
+    }
+  }
+
+  public static void take(final PizzaStorage storage) {
+    try {
+      final int count = getPositiveNumber("Введите количество пиццы для удаления => ");
+      storage.takePizza(count);
+    } catch (IncorrectInputException exception) {
+      System.out.println("Произошла ошибка: " + exception.getMessage());
+    }
+  }
+
+  public static int getPositiveNumber(final String hint) throws IncorrectInputException {
+    System.out.println(hint);
+    try {
+      final int count = scanner.nextInt();
+      if (count <= 0) {
+        throw new IncorrectInputException("Число должно быть больше 0");
+      }
+      return count;
+    } catch (InputMismatchException exception) {
+      throw new IncorrectInputException("Введено не число");
+    }
+  }
+
+  public static void printActionMenu() {
+    System.out.println("add - добавить пиццу на склад");
+    System.out.println("take - взять пиццу со склада");
+    System.out.println("show - показать количество на складе");
+    System.out.println("exit - выход");
+    System.out.print("Введите действие => ");
+  }
+
+}
+```
+
+### Подсказки
+
+* Добавьте `throws` в методы, которые генерируют 
+исключения — `addPizza()`, `takePizza()`, `add()`, `take()`, `getPositiveNumber()`.
+
+</details>
+
+
+<details>
+
+<summary>Задание 5</summary>
+
+## Задание 5
+
+Доработайте код приложения для хранения и обработки паролей пользователей. 
+
+1. По аналогии с классом `ValidatePasswordException` для ошибок при вводе пароля 
+допишите код класса `ValidateNameException` для ошибок при вводе имени пользователя. 
+Оба класса должны наследовать от `ValidateException` и принимать короткое сообщение об ошибке.
+
+2. В методах класса `PasswordMemoryStorage` пропущены предупреждения об исключении `IOException` —
+добавьте их.
+
+3. Допишите код класса `NameValidator` — он должен реализовывать интерфейс `Validator` и проверять, 
+не передана ли пустая строка. В обратном случае — генерировать исключение `ValidateNameException` с сообщением «Имя не должно быть пустым».
+4. Добавьте реализованный экземпляр класса `NameValidator` в список `nameValidators`.
+5. Добавьте отлов исключений `ValidateNameException` и `ValidatePasswordException`
+в методы класса Practicum. При этом выведите сообщения формата:
+* Ошибка валидации имени: + короткое описание ошибки.
+* Ошибка валидации пароля: + короткое описание ошибки.
+6. Организуйте закрытие хранилища `storage` при помощи метода `close()` при 
+любом развитии событий в методах `addUser()` и `showUserPassword()` класса `Practicum`.
+
+`ValidateException.java`
+
+```java
+package exceptions;
+
+public class ValidateException extends Exception {
+    public ValidateException(final String message) {
+        super(message);
+    }
+}
+```
+
+`ValidatePasswordException.java`
+
+```java
+package exceptions;
+
+public class ValidatePasswordException extends ValidateException {
+    public ValidatePasswordException(final String message) {
+        super(message);
+    }
+}
+```
+
+`ValidateNameException.java`
+
+```java
+package exceptions;
+
+public class ValidateNameException {
+// допишите код класса
+}
+```
+
+`PasswordStorage.java`
+
+```java
+package storage;
+
+import java.io.IOException;
+
+public interface PasswordStorage {
+    void open() throws IOException;
+    void store(String user, String password) throws IOException;
+    String get(String user) throws IOException;
+    void close();
+}
+```
+
+`PasswordMemoryStorage.java`
+
+```java
+package storage;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
+public class PasswordMemoryStorage implements PasswordStorage {
+    private static final Map<String, String> passwords = new HashMap<>();
+    private boolean wasOpened = false;
+
+    private boolean shouldErrorBeGenerated() {
+        Random random = new Random();
+        return random.nextInt(100) == 0;
+    }
+
+    @Override
+    public void open() {
+        if (shouldErrorBeGenerated()) {
+            throw new IOException("Произошла внезапная ошибка");
+        }
+        wasOpened = true;
+    }
+   
+    @Override
+    public void store(final String user, final String password) {
+        if (!wasOpened) {
+            throw new IOException("Хранилище не открыто");
+        }
+        if (shouldErrorBeGenerated()) {
+            throw new IOException("Произошла внезапная ошибка");
+        }
+        passwords.put(user, password);
+    }
+
+    @Override
+    public String get(final String user) {
+        if (!wasOpened) {
+            throw new IOException("Хранилище не открыто");
+        }
+        if (shouldErrorBeGenerated()) {
+            throw new IOException("Произошла внезапная ошибка");
+        }
+        return passwords.get(user);
+    }
+
+    @Override
+    public void close() {
+        if (wasOpened) {
+            System.out.println("close action");
+        }
+    }
+}
+```
+
+`Validator.java`
+
+```java
+package validators;
+
+import exceptions.ValidateException;
+
+public interface Validator {
+    void validate(String value) throws ValidateException;
+}
+```
+
+`NameValidator.java`
+
+```java
+package validators;
+
+public class NameValidator {
+// допишите код класса
+}
+```
+
+`PasswordLengthValidator.java`
+
+```java
+package validators;
+
+import exceptions.ValidateException;
+import exceptions.ValidatePasswordException;
+
+public class PasswordLengthValidator implements Validator {
+    private final int minLength;
+
+    public PasswordLengthValidator(final int minLength) {
+        this.minLength = minLength;
+    }
+
+    @Override
+    public void validate(final String password) throws ValidateException {
+        if (password == null || password.length() < minLength) {
+            throw new ValidatePasswordException(
+                String.format("Пароль должен быть больше %d символов", minLength)
+            );
+        }
+    }
+}
+```
+
+`PasswordStrengthValidator.java`
+
+```java
+package validators;
+
+import exceptions.ValidateException;
+import exceptions.ValidatePasswordException;
+
+public class PasswordStrengthValidator implements Validator {
+
+    private boolean hasNumber(final String password) {
+        for (int counter = 0; counter < password.length(); counter++) {
+            if (Character.isDigit(password.charAt(counter))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasLetter(final String password) {
+        for (int counter = 0; counter < password.length(); counter++) {
+            if (Character.isLetter(password.charAt(counter))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void validate(final String password) throws ValidateException {
+        if (!hasLetter(password) || !hasNumber(password)) {
+            throw new ValidatePasswordException("Пароль должен содержать буквы и цифры");
+        }
+    }
+}
+```
+
+`Practicum.java`
+
+```java
+import exceptions.ValidateException;
+import storage.PasswordMemoryStorage;
+import storage.PasswordStorage;
+import validators.PasswordLengthValidator;
+import validators.PasswordStrengthValidator;
+import validators.Validator;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
+
+class Practicum {
+
+	private static final Scanner scanner = new Scanner(System.in);
+	private static final List<Validator> passwordValidators = List.of(
+		new PasswordLengthValidator(5), new PasswordStrengthValidator()
+	);
+	
+	private static final List<Validator> nameValidators = List.of(); // поработайте со списком
+
+	public static void main(String[] args) {
+		loop();
+	}
+
+	public static void loop() {
+		while (true) {
+			final String action = getAction();
+			if ("1".equals(action)) {
+				addUser();
+			} else if ("2".equals(action)) {
+				showUserPassword();
+			} else {
+				break;
+			}
+		}
+	}
+
+	private static void checkValidatorRules(
+		final List<Validator> validators, final String value
+	) throws ValidateException {
+		for (Validator validator: validators) {
+			validator.validate(value);
+		}
+	}
+
+	private static void addUser() {
+		final PasswordStorage storage = new PasswordMemoryStorage();
+		// добавьте отлов исключений ValidateNameException и ValidatePasswordException
+		// закройте хранилище
+		try {
+			storage.open();
+			System.out.println("Введите имя пользователя => ");
+			final String name = scanner.nextLine();
+			checkValidatorRules(nameValidators, name);
+			System.out.println("Введите пароль пользователя => ");
+			final String password = scanner.nextLine();
+			checkValidatorRules(passwordValidators, password);
+			storage.store(name, password);
+		} catch (ValidateException e) {
+			System.out.println("Ошибка валидации: " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("Ошибка работы с хранилищем: " + e.getMessage());
+		}
+	}
+
+	private static void showUserPassword() {
+		final PasswordStorage storage = new PasswordMemoryStorage();
+		// добавьте отлов исключения ValidateNameException
+		// закройте хранилище
+		try {
+			storage.open();
+			System.out.println("Введите имя пользователя => ");
+			final String name = scanner.nextLine();
+			checkValidatorRules(nameValidators, name);
+			final String password = storage.get(name);
+			System.out.println(String.format("Пароль пользователя %s = %s", name, password));
+		} catch (ValidateException e) {
+			System.out.println("Ошибка валидации: " + e.getMessage());
+		} catch (IOException e) {
+			System.out.println("Ошибка работы с хранилищем: " + e.getMessage());
+		}
+	}
+
+	private static String getAction() {
+		System.out.println("1 - добавить пользователя с паролем");
+		System.out.println("2 - отобразить пароль пользователя");
+		System.out.println("другие символы - выход");
+		System.out.println("Выберите действие => ");
+		return scanner.nextLine();
+	}
+}
+```
+### Подсказки
+
+* Класс `ValidateNameException` должен наследовать от `ValidateException` и переопределять его конструктор.
+* В методах `open()`, `store()` и `get()` класса `PasswordMemoryStorage` 
+нужно добавить указание на исключение `IOException` с помощью `throws`.
+* В классе `NameValidator` нужно переопределить метод `validate()`, 
+предупредить об исключении типа `ValidateException` и сгенерировать 
+исключение `ValidateNameException`.
+* Для генерации исключений используйте ключевое слово `throw`.
+* Проверьте, передана ли реализация класса `NameValidator` в список.
+* Для отлова исключений `ValidateNameException` и `ValidatePasswordException` в 
+методах `addUser()` и `showUserPassword()` нужно использовать блоки `catch`.
+* Получить короткое сообщение об ошибке поможет метод `getMessage()`.
+* Используйте блок `finally` для закрытия хранилища.
+
+</details>
+
 
    Предыдущее занятие   |         &nbsp;          |   Следующее занятие    
 :----------------------:|:-----------------------:|:----------------------:
