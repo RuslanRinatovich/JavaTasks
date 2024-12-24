@@ -1423,8 +1423,6 @@ public class Practicum {
 
 </details>
 
-
-
 <details>
 
 <summary>Задание 1</summary> 

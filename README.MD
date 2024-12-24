@@ -34,3 +34,5 @@
 
 [Урок 17. Класс StringBuilder](LESSON17.MD)
 
+[Урок 18. Исключения](LESSON18.MD)
+
