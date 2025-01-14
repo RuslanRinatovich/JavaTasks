@@ -43,3 +43,5 @@
 [Урок 21. Основы функционального программирования](LESSONS/LESSON21.MD)
 
 [Урок 22. Класс Optional](LESSONS/LESSON22.MD)
+
+[Урок 23. Дата и время](LESSONS/LESSON23.MD)
