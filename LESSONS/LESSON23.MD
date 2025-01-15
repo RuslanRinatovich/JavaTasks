@@ -12,10 +12,28 @@
 ***Критерии оценивания***
 
 * Оценка 5 - надо сделать все задания.
-* Оценка 4 - надо сделать любые два задания.
-* Оценка 3 - надо сделать любое одно задание.
+* Оценка 4 - надо сделать любые четыре задания.
+* Оценка 3 - надо сделать любые три задания.
 
 ## Оглавление
+1. [Unix-время. Класс Instant](#unix-время-класс-instant)
+   * [Unix-эпоха](#unix-эпоха)
+   * [Класс Instant и его методы](#класс-instant-и-его-методы)
+     * [now()](#метод-now)
+     * [toString()](#метод-tostring)
+     * [toEpochMilli()](#метод-toepochmilli)
+     * [ofEpochSecond(long epochSecond), ofEpochMilli(long epochMilli) и ofEpochSecond(long epochSecond, long nanoAdjustment)](#методы-ofepochsecondlong-epochsecond-ofepochmillilong-epochmilli-и-ofepochsecondlong-epochsecond-long-nanoadjustment)
+   * [Работа с экземплярами класса Instant](#работа-с-экземплярами-класса-instant)
+2. [LocalDateTime, LocalDate и LocalTime](#классы-localdatetime-localdate-и-localtime)
+   * [Класс LocalDateTime](#класс-localdatetime)
+   * [Методы LocalDateTime](#методы-localdatetime)
+   * [LocalDateTime и текст](#localdatetime-и-текст)
+   * [LocalDateTime = LocalDate + LocalTime](#localdatetime--localdate--localtime)
+3. [Задание 1](#задание-1)
+4. [Задание 2](#задание-2)
+5. [Задание 3](#задание-3)
+6. [Задание 4](#задание-4)
+7. [Задание 5](#задание-5)
 
 <details>
 
