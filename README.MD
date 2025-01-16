@@ -45,3 +45,5 @@
 [Урок 22. Класс Optional](LESSONS/LESSON22.MD)
 
 [Урок 23. Дата и время](LESSONS/LESSON23.MD)
+
+[Урок 24. ](LESSONS/LESSON24.MD)
