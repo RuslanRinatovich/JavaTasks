@@ -2,7 +2,7 @@
 :----------------------:|:-----------------------:|:----------------------:
  [Урок 23](LESSON23.MD) | [Содержание](../README.MD) | [Урок 25](LESSON25.MD)
 
-# Урок 25. Period и Duration
+# Урок 24. Period и Duration
 
 # Требования к сдаче работы
 
@@ -17,8 +17,15 @@
 
 ## Оглавление
 1. [Классы Period и Duration](#классы-period-и-duration)
-   * [Класс `Period`](#класс-period)
-
+   * [Класс Period](#класс-period)
+   * [Класс Duration](#класс-duration)
+   * [Создание объектов Duration и Period](#создание-объектов-duration-и-period)
+   * [Методы класса Duration](#методы-класса-duration)
+2. [Часовые пояса: класс ZonedDateTime](#часовые-пояса-класс-zoneddatetime)
+   * [Фиксированное смещение](#фиксированное-смещение)
+   * [Временные зоны](#временные-зоны)
+   * [Методы ZonedDateTime](#методы-zoneddatetime)
+   * [Форматирование](#форматирование)
 3. [Задание 1](#задание-1)
 4. [Задание 2](#задание-2)
 5. [Задание 3](#задание-3)
@@ -40,7 +47,7 @@
 и `Duration` (англ. «продолжительность, длительность»). О них и пойдёт речь
 в этом уроке.
 
-### Класс `Period`
+### Класс Period
 Используется для вычисления срока **между двумя датами**. В экземпляре класса 
 есть три поля: 
 * продолжительность в годах (можно получить с помощью метода `getYears()`);
@@ -56,7 +63,7 @@
 Например, результатом метода `Period.between(LocalDate.of(2021, 11, 15),
 LocalDate.of(2021, 11, 19))` будет промежуток в 4 дня:
 
-![img_19.png](img_19.png)
+![img_19.png](L23-24/img_19.png)
 
 Один из популярных примеров работы класса `Period` — программа для подсчёта возраста:
 
@@ -80,7 +87,7 @@ class Practicum {
    
 ```
 
-![img_20.png](img_20.png)
+![img_20.png](L23-24/img_20.png)
 
 
 ### Класс Duration
@@ -115,7 +122,7 @@ class Practicum {
 }
 ```
 
-![img_21.png](img_21.png)
+![img_21.png](L23-24/img_21.png)
 
 Кроме того, у `Instant`, `LocalDateTime`, `LocalDate` и `LocalTime` есть 
 метод `plus(TemporalAmount amountToAdd)`, где `TemporalAmount` (англ. «временно́е количество») 
@@ -152,7 +159,7 @@ class Practicum {
 }
 ```
 
-![img_22.png](img_22.png)
+![img_22.png](L23-24/img_22.png)
 
 ### Создание объектов Duration и Period
 
@@ -196,7 +203,7 @@ class Practicum {
 }
 ```
 
-![img_24.png](img_24.png)
+![img_24.png](L23-24/img_24.png)
 
 А вот методы, с помощью которых можно создать экземпляр класса `Duration`:
 * `ofSeconds(long seconds)` — создаёт экземпляр `Duration` длительностью `seconds` секунд,
@@ -234,7 +241,7 @@ class Practicum {
 }
 ```
 
-![img_25.png](img_25.png)
+![img_25.png](L23-24/img_25.png)
 
 ### Методы класса Duration
 
@@ -274,7 +281,7 @@ class Practicum {
 }
 ```
 
-![img_26.png](img_26.png)
+![img_26.png](L23-24/img_26.png)
 
 Так как выводить время в секундах далеко не всегда удобно, 
 то у `Duration` есть методы, приводящие продолжительность в другие единицы времени:
@@ -310,7 +317,7 @@ class Practicum {
 }
 ```
 
-![img_28.png](img_28.png)
+![img_28.png](L23-24/img_28.png)
 
 </details>
 
@@ -390,7 +397,7 @@ class Practicum {
 был часовой пояс UTC+4, так что правильно было сконвертировать Москва, 12.02.2013,
 14:15 в 2013-02-12T**10**:15 UTC.
 
-![img_29.png](img_29.png)
+![img_29.png](L23-24/img_29.png)
 
 Чтобы избежать проблем с историческим изменением часовых поясов 
 в конкретном месте, в Java есть второй вариант хранения времени. 
@@ -419,7 +426,7 @@ ZoneId zoneId = ZoneId.of("Europe/Moscow");
 
 Полный список регионов покрывает всю нашу планету, его можно посмотреть [здесь](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
-![img_30.png](img_30.png)
+![img_30.png](L23-24/img_30.png)
 
 Создать `ZonedDateTime` можно с помощью метода `of(LocalDateTime localDateTime, ZoneId zone)`:
 
@@ -473,7 +480,7 @@ class Practicum {
 }
 ```
 
-![img_31.png](img_31.png)
+![img_31.png](L23-24/img_31.png)
 
 ### Методы ZonedDateTime
 
@@ -533,7 +540,7 @@ class Practicum {
 }
 ```
 
-![img_32.png](img_32.png)
+![img_32.png](L23-24/img_32.png)
 
 `withZoneSameLocal(ZoneId zone)` — метод, аналогичный выбору другого 
 часового пояса при настройке телефона: часы будут показывать то же самое время,
@@ -566,7 +573,7 @@ class Practicum {
 }
 ```
 
-![img_33.png](img_33.png)
+![img_33.png](L23-24/img_33.png)
 
 ### Форматирование
 
@@ -595,10 +602,10 @@ class Practicum {
 }
 ```
 
-![img_34.png](img_34.png)
+![img_34.png](L23-24/img_34.png)
 
 
-![img_35.png](img_35.png)
+![img_35.png](L23-24/img_35.png)
 
 </details>
 
@@ -805,105 +812,6 @@ class Practicum {
 * Вывести время в необходимом формате поможет метод `format(formatter)`.
 * Чтобы получить продолжительность в нужных единицах времени, 
 воспользуйтесь методами `getSeconds()`, `toDays()`, `toMinutes()`.
-
-
-</details>
-
-<details>
-
-<summary>Задание 2</summary>
-
-## Задание 2
-
-Для космических перелётов в 2099 году используются прыжки сквозь гиперпространство.
-Бортовому компьютеру необходимо знать: или прыжок будет коротким (меньше суток), 
-и тогда продолжительность прыжка нужно выводить в минутах, или долгим, и тогда его 
-продолжительность нужно выводить в днях. 
-
-Для вывода временных меток используйте паттерн "dd.MM.yyyy, HH:mm". 
-Итоговый ответ должен выглядеть так:
-
-```
-Вход в гиперпространство:
-10.10.2099, 12:05
-Выход из гиперпространства:
-10.10.2099, 14:15
-Минут на гиперпрыжок: 130
-
-Вход в гиперпространство:
-10.10.2099, 12:00
-Выход из гиперпространства:
-11.10.2099, 15:30
-Дней на гиперпрыжок: 1
-
-Вход в гиперпространство:
-10.10.2099, 23:10
-Выход из гиперпространства:
-11.10.2099, 10:25
-Минут на гиперпрыжок: 675
-```
-
-```java
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.Period;
-import java.time.format.DateTimeFormatter;
-
-
-class Practicum {
-    public static final int SECONDS_IN_DAY = 60 * 60 * 24;
-
-    public static void main(String[] args) {
-        LocalDateTime firstStart = LocalDateTime.of(2099, 10, 10, 12, 5);
-        LocalDateTime firstFinish = LocalDateTime.of(2099, 10, 10, 14, 15);
-
-        LocalDateTime secondStart = LocalDateTime.of(2099, 10, 10, 12, 0);
-        LocalDateTime secondFinish = LocalDateTime.of(2099, 10, 11, 15, 30);
-
-        LocalDateTime thirdStart = LocalDateTime.of(2099, 10, 10, 23, 10);
-        LocalDateTime thirdFinish = LocalDateTime.of(2099, 10, 11, 10, 25);
-
-
-        printGap(firstStart, firstFinish);
-        printGap(secondStart, secondFinish);
-        printGap(thirdStart, thirdFinish);
-    }
-
-    private static void printGap(LocalDateTime start, LocalDateTime finish) {
-        // используйте паттерн "dd.MM.yyyy, HH:mm"
-        DateTimeFormatter formatter = ...;
-
-        System.out.println("Вход в гиперпространство:");
-        // вывод должен быть в корректном формате
-        System.out.println(...);
-        System.out.println("Выход из гиперпространства:");
-        // вывод должен быть в корректном формате
-        System.out.println(...);
-        // найдите продолжительность
-        Duration duration = ...;
-
-        // сравните продолжительность в секундах с количеством секунд в сутках
-        // воспользуйтесь константой SECONDS_IN_DAY
-        if (...) {
-            // выведите продолжительность в днях
-            System.out.println("Дней на гиперпрыжок: " + ...);
-        } else {
-            // выведите продолжительность в минутах
-            System.out.println("Минут на гиперпрыжок: " + ...);
-        }
-        System.out.println();
-    }
-}
-
-```
-
-### Подсказки
-
-* Создать правильный формат можно с помощью `DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm")`.
-* Вывести время в необходимом формате поможет метод `format(formatter)`.
-* Чтобы получить продолжительность в нужных единицах времени, 
-воспользуйтесь методами `getSeconds()`, `toDays()`, `toMinutes()`.
-
 
 
 </details>

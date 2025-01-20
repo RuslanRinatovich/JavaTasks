@@ -61,7 +61,7 @@
 называют **Unix Epoch** (англ. «Unix-эпоха»), 
 а саму систему представления времени — **Unix time** (англ. «Unix-время»).
 
-![img.png](img.png)
+![img.png](L23-24/img.png)
 
 Существует несколько стандартов измерения и записи времени. 
 Вот два основных:
@@ -140,7 +140,7 @@ class Practicum {
 }
 ```
 
-![img_1.png](img_1.png)
+![img_1.png](L23-24/img_1.png)
 
 #### Метод toEpochMilli()
 
@@ -159,7 +159,7 @@ public class Practicum {
 }
 ```
 
-![img_2.png](img_2.png)
+![img_2.png](L23-24/img_2.png)
 
 #### Методы ofEpochSecond(long epochSecond), ofEpochMilli(long epochMilli) и ofEpochSecond(long epochSecond, long nanoAdjustment)
 
@@ -192,7 +192,7 @@ public class Practicum {
 }
 ```
 
-![img_3.png](img_3.png)
+![img_3.png](L23-24/img_3.png)
 
 В обоих случаях вывод будет одинаковым: `1957-10-04T19:28:34Z`.
 
@@ -211,7 +211,7 @@ class Practicum {
 }
 ```
 
-![img_4.png](img_4.png)
+![img_4.png](L23-24/img_4.png)
 
 Да-да, `Instant` позволяет хранить даты от миллиарда лет до нашей эры 
 и до миллиарда лет и одного года — нашей.
@@ -266,7 +266,7 @@ class Practicum {
 }
 ```
 
-![img_6.png](img_6.png)
+![img_6.png](L23-24/img_6.png)
 
 
 Что было раньше — курица или яйцо? Если и то и другое — экземпляры Instant, 
@@ -305,7 +305,7 @@ class Practicum {
 }
 ```
 
-![img_5.png](img_5.png)
+![img_5.png](L23-24/img_5.png)
 
 </details>
 
@@ -334,7 +334,7 @@ class Practicum {
 }
 ```
 
-![img_7.png](img_7.png)
+![img_7.png](L23-24/img_7.png)
 
 Информацию о текущем времени программа берёт из устройства, на котором она запущена. 
 Поэтому если на нём установлено неправильное время, 
@@ -376,7 +376,7 @@ class Practicum {
 }
 ```
 
-![img_8.png](img_8.png)
+![img_8.png](L23-24/img_8.png)
 
 
 ### Методы LocalDateTime
@@ -410,7 +410,7 @@ class Practicum {
 }
 ```
 
-![img_9.png](img_9.png)
+![img_9.png](L23-24/img_9.png)
 
 А можно «цепочкой» вызвать сразу несколько методов:
 
@@ -429,7 +429,7 @@ class Practicum {
 }
 ```
 
-![img_10.png](img_10.png)
+![img_10.png](L23-24/img_10.png)
 
 Экземпляры класса `LocalDateTime` можно сравнивать друг с другом с помощью следующих методов:
 * `isBefore(LocalDateTime otherMoment)` — проверяет, находятся ли дата и время на временной
@@ -467,7 +467,7 @@ class Practicum {
 }
 ```
 
-![img_11.png](img_11.png)
+![img_11.png](L23-24/img_11.png)
 
 ### LocalDateTime и текст
 
@@ -510,7 +510,7 @@ class Practicum {
 }
 ```
 
-![img_13.png](img_13.png)
+![img_13.png](L23-24/img_13.png)
 
 Аналогично можно произвести обратное действие — с помощью статического метода `parse(..)` 
 из строки получить экземпляр `LocalDateTime`. Если передать только строку, то конвертация 
@@ -536,7 +536,7 @@ class Practicum {
 }
 ```
 
-![img_14.png](img_14.png)
+![img_14.png](L23-24/img_14.png)
 
 ### LocalDateTime = LocalDate + LocalTime
 
@@ -599,7 +599,7 @@ class Practicum {
 }
 ```
 
-![img_15.png](img_15.png)
+![img_15.png](L23-24/img_15.png)
 
 А ещё `LocalDate` и LocalTime можно извлечь из `LocalDateTime`:
 
@@ -623,7 +623,7 @@ class Practicum {
 }
 ```
 
-![img_16.png](img_16.png)
+![img_16.png](L23-24/img_16.png)
 
 И собрать обратно:
 
@@ -645,7 +645,7 @@ class Practicum {
 }
 ```
 
-![img_17.png](img_17.png)
+![img_17.png](L23-24/img_17.png)
 
 Из `LocalDateTime`, `LocalDate` и `LocalTime` можно извлечь нужные единицы времени 
 с помощью методов:
@@ -686,7 +686,7 @@ class Practicum {
 }
 ```
 
-![img_18.png](img_18.png)
+![img_18.png](L23-24/img_18.png)
 
 
 </details>
