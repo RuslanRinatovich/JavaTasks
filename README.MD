@@ -46,4 +46,6 @@
 
 [Урок 23. Дата и время](LESSONS/LESSON23.MD)
 
-[Урок 24. ](LESSONS/LESSON24.MD)
+[Урок 24. Period, Duration и ZonedDateTime](LESSONS/LESSON24.MD)
+
+[Урок 25. HTTP](LESSONS/LESSON25.MD)
