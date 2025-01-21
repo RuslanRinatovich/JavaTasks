@@ -417,6 +417,401 @@ public class Practicum {
 
 </details>
 
+<details>
+
+<summary>Разбираем HTTP-запросы</summary>
+
+## Разбираем HTTP-запросы
+
+Любой HTTP-запрос состоит из нескольких частей: HTTP-метод, заголовки, адрес, 
+а также тело запроса. Для работы с каждым из этих элементов у класса `HttpExchange` 
+есть отдельные методы. Разберём их подробнее.
+
+### InputStream getRequestBody()
+
+Метод возвращает тело запроса, то есть данные, которые клиент отправил на сервер.
+Это может быть **простой текст** (англ. plain text), картинка, любой файл — спецификация
+HTTP не устанавливает ограничений для типа данных.
+
+Важно, чтобы клиент мог закодировать эти данные в бинарном виде, 
+то есть в виде нулей и единиц, а сервер — правильно раскодировать и обработать. 
+Поэтому со стороны сервера иногда добавляются дополнительные проверки на тип передаваемых 
+в запросе данных, на их размер и так далее.
+
+Метод `getRequestBody` возвращает `InputStream` — входящий поток байтов. И передаёт в
+него данные по мере получения очередного сетевого пакета, составляющего тело запроса.
+Этот поток байтов необходимо обработать и сконвертировать в такой тип данных, с 
+которым можно продолжать работать.
+
+Для этого можно использовать метод `readAllBytes` — он дожидается завершения потока
+и возвращает все полученные данные в виде массива байтов. Далее этот массив можно
+передать в конструктор класса `String`, чтобы сконвертировать в строковое представление.
+
+
+```java
+// получаем входящий поток байтов
+InputStream inputStream = httpExchange.getRequestBody()
+// дожидаемся получения всех данных в виде массива байтов и конвертируем их в строку
+String body = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+System.out.println("Тело запроса:\n" + body);
+```
+
+Обратите внимание: при построении строки из массива байтов мы также указали кодировку 
+символов — `StandardCharsets.UTF_8`. Она необходима для правильного преобразования байтов в строку.
+
+Проверьте работу метода `getRequestBody`. Скопируйте код, который найдёте ниже, 
+в IDEA, запустите и отправьте `POST`-запрос на `http://localhost:8080/hello` с помощью Postman. 
+В теле запроса укажите своё имя. В качестве типа данных тела запроса выберите `Plain` 
+(простой текст).
+
+```java
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
+class HelloHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange httpExchange) throws IOException {
+        // считываем тело запроса и преобразуем в строку
+        InputStream inputStream = httpExchange.getRequestBody();
+        String name = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        System.out.println("Тело запроса:\n" + name);
+
+        httpExchange.sendResponseHeaders(200, 0);
+
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            String response = "Привет " + name + "! Рады видеть на нашем сервере.";
+            os.write(response.getBytes());
+        }
+    }
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    }
+}
+```
+
+Вы увидите переданное серверу имя в консоли, 
+а также в строке, которую сервер вернёт в качестве ответа.
+
+### String getRequestMethod()
+
+`getRequestMethod` возвращает HTTP-метод, который клиент использовал при отправке запроса.
+По нему сервер определяет, какое действие нужно выполнить. 
+С помощью этого метода можно сделать из одного эндпоинта `/hello` несколько.
+
+```java
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
+class HelloHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange httpExchange) throws IOException {
+
+        String method = httpExchange.getRequestMethod();
+        System.out.println("Началась обработка " + method + " /hello запроса от клиента.");
+
+        String response;
+        switch(method) {
+            case "POST":
+                response = "Вы использовали метод POST!";
+                break;
+            case "GET":
+                response = "Вы использовали метод GET!";
+                break;
+            default:
+                response = "Вы использовали какой-то другой метод!";
+        }
+
+        httpExchange.sendResponseHeaders(200, 0);
+
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    }
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    }
+}
+```
+
+С помощью Postman отправьте запросы с разными HTTP-методами 
+на адрес localhost:8080/hello и посмотрите на результат
+
+### Headers getRequestHeaders()
+
+С помощью этого метода можно прочитать заголовки, которые передал клиент. 
+Заголовки используются по-разному:
+* Клиент может передать серверу предпочтительный язык. Эта возможность важна для крупных международных сайтов, которыми пользуются люди из разных стран и говорящие на разных языках.
+* Клиент может передать секретные данные (обычно логин и пароль или ключ) для авторизации пользователя. Такие заголовки часто применяются при разработке личных кабинетов пользователя: в банках, социальных сетях и других сервисах.
+* В заголовке может сообщаться тип передаваемых данных. Например, 
+заголовок `Content-type: application/json` говорит, что тело запроса передаётся в формате JSON.
+Этот заголовок также может содержать информацию о кодировке символов,
+например — `Content-Type: text/html; charset=utf-8.`
+
+Метод `getRequestHeaders` возвращает `Headers` — по сути это расширенная хеш-таблица
+`Map<String,List<String>>`. В ней ключ — это название заголовка, 
+а значение — это список его значений. С его помощью можно, например, вывести все заголовки:
+
+```java
+Headers requestHeaders = httpExchange.getRequestHeaders();
+System.out.println("Заголовки запроса: " + requestHeaders.entrySet());
+```
+
+Также можно проверить конкретный заголовок:
+
+```java
+List<String> contentTypeValues = requestHeaders.get("Content-type");
+if ((contentTypeValues != null) && (contentTypeValues.contains("application/json"))) {
+    System.out.println("Это JSON!");
+}
+```
+
+Некоторые заголовки заполняются браузером автоматически — например, `User-Agent`. 
+Он содержит информацию о ПО, которое использует клиент. Структура `User-Agent `может отличаться.
+Обычно 
+в этом заголовке передаются данные об операционной системе и браузере — их название и версия.
+
+```java
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.55 Safari/537.36
+```
+
+Попробуйте запустить следующий код и вызвать эндпоинт `/hello` из Postman и из браузера.
+
+```java
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
+class HelloHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange httpExchange) throws IOException {
+        /* Получаем заголовки запроса, выводим их в консоль 
+           и возвращаем в качестве тела ответа. */
+        Headers requestHeaders = httpExchange.getRequestHeaders();
+        String response = "Request headers: \n" + requestHeaders.entrySet();
+        System.out.println(response);
+
+        httpExchange.sendResponseHeaders(200, 0);
+
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    }
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    }
+}
+```
+
+Обратите внимание, как меняются передаваемые заголовки при использовании браузера и Postman.
+
+### URI getRequestURI()
+
+Этот метод возвращает **URI**, использованный клиентом при вызове сервера. 
+
+> URI — это символьная строка, позволяющая идентифицировать какой-либо ресурс: 
+> документ, изображение, файл и так далее.
+
+У URI несколько элементов, но в нашем случае важен `path`. С его помощью API 
+будет принимать **параметры пути** (англ. _path parameters_) — это части пути, 
+которые можно использовать при обработке запроса.
+
+Параметры пути обычно заключаются в фигурные скобки, например:
+
+
+* `POST user/{id}` — создаст пользователя с указанным `id`;
+* `GET index/{city}/{street}/{building}` — вернёт почтовый индекс города `city` на улице 
+`street`, здания номер `building`;
+* `DELETE user/{email}/comment`s — удалит комментарии пользователя с переданным `email`.
+
+В нашем примере эндпоинт `hello/{name}` может возвращать приветствие по переданному 
+имени — на запрос `hello/Игорь` сервер вернёт «Привет, Игорь!». 
+Строку `httpServer.createContext("/hello", new HelloHandler()); `
+менять не понадобится — запросы и к `/hello`, и к `hello/Игорь`, 
+и к `hello/очень/большой/запрос` будут обрабатываться 
+одним и тем же обработчиком. Чтобы вернуть в ответе полученный параметр пути, нужно:
+
+1. Получить URI, по которому был отправлен запрос.
+```java
+ URI requestURI = httpExchange.getRequestURI();
+```
+
+2. Из экземпляра URI получить path.
+```java
+ String path = requestURI.getPath();
+ 
+```
+3. Получить строку вида `/hello/имя`. Её необходимо разбить на составляющие. 
+Для этого можно воспользоваться методом `split(...)` для строк.
+
+```java
+ String[] splitStrings = path.split("/");
+
+```
+4. Взять второй элемент (элемент под нулевым индексом — от начала строки до первого
+`/` — будет пустой строкой, первый — `hello`, второй — тот, который нужен).
+
+```java
+ String name = splitStrings[2];
+ 
+```
+
+Теперь полученный параметр можно возвращать в ответе! 
+Убедитесь в этом: запустите следующий код и отправьте 
+запрос вида `http://localhost:8080/hello/{имя}` из Postman и из браузера:
+
+```java
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
+class HelloHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange httpExchange) throws IOException {
+        // получаем путь, на который пришел запрос
+        String path = httpExchange.getRequestURI().getPath();
+        // разбиваем путь на компоненты и берём последний
+        String name = path.split("/")[2];
+        // выводим полученное имя в консоль и в качестве ответа
+        System.out.println("Имя: " + name);
+        httpExchange.sendResponseHeaders(200, 0);
+
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            String response = "Привет, " + name + "!";
+            os.write(response.getBytes());
+        }
+    }
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    }
+}
+```
+
+</details>
+
+<details>
+
+<summary>Задание 1</summary>
+
+## Задание 1
+
+Добавьте в код сервера новый обработчик для эндпоинта `/day`. 
+Сервер должен отвечать случайно выбранным днём недели, 
+то есть одной из строк — `“MONDAY"`, `"TUESDAY"`, `"WEDNESDAY"` и так далее.
+Для этого можно использовать 
+стандартное перечисление `DayOfWeek`  и класс `Random`.
+
+```java
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.util.Random;
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    // IOException могут сгенерировать методы create() и bind(...)
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create();
+
+        httpServer.bind(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+				// добавьте новый обработчик для /day тут
+        httpServer.start(); // запускаем сервер
+
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+		httpServer.stop(1); // завершение сервера необходимо для тренажёра
+    }
+
+    static class HelloHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            System.out.println("Началась обработка /day запроса от клиента.");
+
+            String response = "Hey! Glad to see you on our server.";
+            httpExchange.sendResponseHeaders(200, 0);
+
+            try (OutputStream os = httpExchange.getResponseBody()) {
+                os.write(response.getBytes());
+            }
+        }
+    }
+
+		// объявите класс-обработчик тут
+}
+
+
+```
+
+### Подсказки
+
+* Выбрать номер случайного дня можно с помощью объекта класса `Random` 
+и его метода `nextInt`, который нужно ограничить количеством элементов 
+перечисления.
+* Для получения случайного дня недели, можно воспользоваться статическим методом
+`of` — `DayOfWeek.of(rndDayNumber).name()`.
+* Не забудьте, что перед отправкой тела ответа нужно отправить стартовую строку и заголовки.
+* Чтобы отправить тело ответа, нужно получить `OutputStream`. 
+Запишите в него ответ, используя для этого конструкцию `try-with-resources`.
+
+</details>
+
    Предыдущее занятие   |           &nbsp;           |    Следующее занятие    
 :----------------------:|:--------------------------:|:-----------------------:
  [Урок 25](LESSON25.MD) | [Содержание](../README.MD) | [Урок 27](LESSON27.MD)
