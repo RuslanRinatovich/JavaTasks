@@ -743,6 +743,162 @@ public class Practicum {
 
 <details>
 
+<summary>Формируем HTTP-ответы</summary>
+
+## Формируем HTTP-ответы<
+
+В классе HttpExchange есть методы не только для чтения запроса, 
+но и для формирования ответа. Они помогают заполнять заголовки, 
+статус-код и тело ответа. Рассмотрим их.
+
+### Headers getResponseHeaders()
+
+С помощью этого метода можно добавить к ответу HTTP-заголовки. 
+Метод `getResponseHeaders` возвращает объект 
+класса [Headers](https://docs.oracle.com/en/java/javase/11/docs/api/jdk.httpserver/com/sun/net/httpserver/Headers.html).
+Все дальнейшие действия по редактированию заголовков выполняются с этим объектом.
+
+```java
+
+Headers headers = httpExchange.getResponseHeaders();
+
+/* Content-Type — это один из стандартных заголовков.
+   С его помощью клиент понимает, в каком формате пришло тело ответа:
+   text/plain означает, что ответ состоит из простого текста,
+   a charset=utf-8 — что текст закодирован в кодировке Юникод. */
+headers.set("Content-Type", "text/plain; charset=utf-8");
+
+// можно создать свои собственные заголовки
+headers.set("X-your-own-header", "any-information-you-want");
+headers.set("X-your-own-header-2", "any-information-you-want-2");
+
+```
+
+Обратите внимание, что настраивать заголовки нужно до вызова метода `sendResponseHeaders`. 
+
+Запустите код и исследуйте заголовки ответа в Postman.
+
+```java
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
+class HelloHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange httpExchange) throws IOException {
+
+        // добавляем заголовки в ответ
+        Headers headers = httpExchange.getResponseHeaders();
+        headers.set("Content-Type", "text/plain; charset=utf-8");
+        headers.set("X-your-own-header", "any-information-you-want");
+        headers.set("X-your-own-header-2", "any-information-you-want-2");
+        
+        // отправляем стартовую строку и настроенные заголовки ответа
+        httpExchange.sendResponseHeaders(200, 0);
+
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write("Привет! Рады видеть на нашем сервере.".getBytes());
+        }
+    }
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+    }
+}
+```
+
+### void sendResponseHeaders(int rCode, long responseLength)
+
+Этот метод мы уже упоминали. Он принимает на вход два параметра: код статуса ответа и длину сообщения.
+
+```java
+httpExchange.sendResponseHeaders(200, 787);
+```
+
+После вызова `sendResponseHeaders` сервер отправит клиенту стартовую строку 
+и заголовки ответа. Обратите внимание: этот метод нужно вызывать после того,
+как настроены заголовки и до вызова метода `getResponseBody`.
+
+### OutputStream getResponseBody()
+
+Этот метод определяет, что вернётся клиенту в теле ответа. 
+Метод `getResponseBody` возвращает объект `OutputStream`, в который нужно 
+записать массив байтов. После того как байты записаны, у объекта `OutputStream` нужно
+вызвать метод `close`.
+
+```java
+OutputStream os = httpExchange.getResponseBody();
+os.write("Тело ответа в виде простого текста".getBytes());
+os.close();
+```
+
+Или можно воспользоваться `try-with-resources`, как мы показывали ранее.
+
+```java
+try (OutputStream os = httpExchange.getResponseBody()) {
+    os.write("Тело ответа в виде простого текста".getBytes());
+}
+```
+
+</details>
+
+<details>
+
+<summary>Краткий конспект</summary>
+
+## Краткий конспект
+
+Подытожим, какие знания в этом пригодятся:
+* Для тестирования Web API используют специальные программы — например, Insomnia, Postman.
+Они позволяют осуществлять HTTP-запросы к эндпоинтам веб-сервера.
+* **Эндпоинт** — это комбинация URL-адреса и HTTP-метода. Каждый эндпоинт 
+отвечает за выполнение конкретной задачи.
+* **Путь** — это часть URL, отвечающая за местоположение ресурса на сервере. 
+Применительно к эндпоинтам обычно говорят о пути, а не о полном URL-адресе. 
+Иногда используют вложенные пути — например, `/news/latest`.
+* **Сокет** — это средство операционной системы, через которое программа может 
+получить доступ к сети. Процесс получения доступа называется открытием сокета. 
+IP-адрес и номер сетевого порта считаются параметрами сокета.
+В дальнейшем по этому адресу и номеру порта можно будет взаимодействовать с программой из сети.
+* За описание и публикацию эндпоинтов отвечает **HTTP-сервер**. 
+Класс `com.sun.net.httpserver.HttpServer` реализует HTTP-сервер в Java.
+* Для работы с экземпляром `HttpServer` его нужно создать с помощью метода `create` и 
+связать с портом с помощью метода `bind`.
+* Чтобы начать обрабатывать HTTP-запросы, нужно создать класс-обработчик, 
+имплементирующий интерфейс `HttpHandler`, и переопределить в 
+нём метод `public void handle(HttpExchange httpExchange)`. 
+Именно этот метод будет вызван, когда в обработчик поступит HTTP-запрос. 
+В объекте `httpExchange` при этом будут содержаться данные о запросе. 
+В него же нужно записать данные ответа.
+* Среди наиболее часто используемых данных о запросе в `httpExchange` содержатся метод 
+запроса (возвращается методом `getRequestMethod`), заголовки запроса
+(возвращаются методом `getRequestHeaders`), тело запроса (метод `getRequestBody`) и `URI`,
+к которому был вызов (метод `getRequestURI`).
+* Для возвращения кода ответа используют метод `httpExchange.sendResponseHeaders`. 
+Тело ответа нужно записать в поток вывода, получаемый методом `getResponseBody`.
+* Чтобы привязать обработчик к определённому пути, используют метод 
+`createContext(String path, HttpHandler handler)`. Его нужно вызвать у объекта класса `HttpServer`.
+* Чтобы экземпляр `HttpServer` начал обрабатывать запросы, 
+его нужно запустить — вызвать у него метод `start`.
+ 
+
+</details>
+
+
+<details>
+
 <summary>Задание 1</summary>
 
 ## Задание 1
@@ -809,6 +965,924 @@ public class Practicum {
 * Не забудьте, что перед отправкой тела ответа нужно отправить стартовую строку и заголовки.
 * Чтобы отправить тело ответа, нужно получить `OutputStream`. 
 Запишите в него ответ, используя для этого конструкцию `try-with-resources`.
+
+</details>
+
+
+<details>
+
+<summary>Задание 2</summary>
+
+## Задание 2
+
+Реализуйте API со следующей логикой:
+* Для метода `GET /hello` всегда возвращается один ответ — «Здравствуйте!».
+  * Для метода `POST /hello/{профессия}/{имя}`:
+  * Тело запроса считается приветствием.
+  * Если передан заголовок `X-Wish-Good-Day=true`, возвращается ответ вида `«[приветствие, профессия имя]! Хорошего дня!»`.
+  Например, на запрос `/hello/программист/Егор`, заголовок `wishGoodDay=true` и тело запроса `Доброе утро` корректный ответ — `«Доброе утро, программист Егор! Хорошего дня!»`.
+* Если заголовок отсутствует, возвращается ответ вида `«[приветствие, профессия имя]!»`.
+* Для любого другого метода выводится сообщение об ошибке — «Некорректный метод!».
+
+Будьте внимательны: при возникновении ошибки (например, `NullPointerException`) в консоли 
+не будет отображаться никакой информации. Тестируйте аккуратно!
+
+
+```java
+
+
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+class HelloHandler implements HttpHandler {
+    @Override
+    public void handle(HttpExchange httpExchange) throws IOException {
+        String response;
+
+        // извлеките метод из запроса
+        String method = ...
+
+        switch(...) {
+            case ...:
+                response = handlePostRequest(httpExchange);
+            case ...:
+                response = handleGetRequest(httpExchange);
+            // не забудьте про ответ для остальных методов
+            ...
+        }
+
+        httpExchange.sendResponseHeaders(200, 0);
+        try (OutputStream os = httpExchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
+    }
+
+    private static String handleGetRequest(HttpExchange httpExchange) {
+        // обработайте GET-запрос в соответствии с условиями задания
+        ...
+    }
+
+    private static String handlePostRequest(HttpExchange httpExchange) throws IOException {
+        // обработайте POST-запрос в соответствии с условиями задания
+
+        // извлеките path из запроса
+        String path = ...
+        // а из path — профессию и имя
+        String profession = ...
+        String name = ...
+
+        // извлеките тело запроса 
+        ...
+        String body = ...
+
+        // объедините полученные данные из тела и пути запроса
+        String response = ...
+
+        // извлеките заголовок и в зависимости от условий дополните ответ
+        List<String> wishGoodDay = ...
+        // верните полученную строку ответа
+        ...
+    }
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/hello", new HelloHandler());
+        httpServer.start();
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+        httpServer.stop(2);
+    }
+}
+
+```
+
+
+### Подсказки
+
+* Получить HTTP-метод можно с помощью `httpExchange.getRequestMethod()`.
+* Получить тело запроса поможет метод `getRequestBody` класса `HttpExchange`,
+а также метод `readAllBytes` класса `InputStream`.
+* Получить профессию и имя из запроса можно с помощью следующего кода:
+
+```java
+  String path = httpExchange.getRequestURI().getPath();
+  String[] splitStrings = path.split("/");
+  String profession = splitStrings[2];
+  String name = splitStrings[3];
+
+```
+   
+Проверить нужный заголовок поможет этот код:
+```java
+  List<String> wishGoodDay = requestHeaders.get("X-Wish-Good-Day");
+  if ((wishGoodDay != null) && (wishGoodDay.contains("true"))) {
+      ...
+  }
+   ```
+
+</details>
+
+
+
+<details>
+
+<summary>Задание 3</summary>
+
+## Задание 3
+
+Вам нужно создать HTTP-сервер для небольшой социальной сети. Сервер сможет обрабатывать запросы к трём эндпоинтам:
+* `GET /posts` — для получения списка всех постов;
+* `GET /posts/{postId}/comments` — для получения комментариев к посту;
+* `POST /posts/{postId}/comments` — для добавления нового комментария к посту.
+
+На первом этапе реализуйте метод `getEndpoint` — он должен:
+* анализировать, к какому из трёх перечисленных выше эндпоинтов был запрос;
+* возвращать один из элементов перечисления определённого в классе PostsHandler.
+
+```java
+enum Endpoint {GET_POSTS, GET_COMMENTS, POST_COMMENT, UNKNOWN} 
+```
+
+Также реализуйте метод `writeResponse`, который возвращает HTTP-ответ с 
+указанным кодом статуса и строкой, которую нужно передать в качестве тела.
+Учтите, что если передана пустая строка, то ответ должен быть отправлен без тела.
+
+Не забудьте доработать метод `main`, в котором нужно сконфигурировать и запустить `HttpServer`.
+
+```java
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+class PostsHandler implements HttpHandler {
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+
+        // получите информацию об эндпоинте, к которому был запрос
+        Endpoint endpoint = ...
+
+        switch (endpoint) {
+            case GET_POSTS: {
+                writeResponse(exchange, "Получен запрос на получение постов", 200);
+                break;
+            }
+            case GET_COMMENTS: {
+                writeResponse(exchange, "Получен запрос на получение комментариев", 200);
+                break;
+            }
+            case POST_COMMENT: {
+                writeResponse(exchange, "Получен запрос на добавление комментария", 200);
+                break;
+            }
+            default:
+                writeResponse(exchange, "Такого эндпоинта не существует", 404);
+        }
+    }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        // реализуйте этот метод, проанализировав путь и метод запроса
+        // ...
+    }
+
+    private void writeResponse(HttpExchange exchange,
+                               String responseString,
+                               int responseCode) throws IOException {
+            /*
+             Реализуйте отправку ответа, который содержит responseString в качестве тела ответа
+             и responseCode в качестве кода ответа.
+             Учтите, что если responseString — пустая строка, то её не нужно передавать в ответе.
+             В этом случае ответ отправляется без тела.
+             */
+        // ...
+    }
+
+    enum Endpoint {GET_POSTS, GET_COMMENTS, POST_COMMENT, UNKNOWN}
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+
+        // добавьте код для конфигурирования и запуска сервера
+        // ...
+
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+        // завершаем работу сервера для корректной работы тренажёра
+        httpServer.stop(1);
+    }
+}
+
+```
+
+
+### Подсказки
+
+* Чтобы определить, к каким эндпоинтам был сделан запрос, проанализируйте путь, 
+указанный в запросе (`exchange.getRequestURI().getPath()`), 
+и HTTP-метод запроса (`exchange.getRequestMethod()`). 
+Эти значения являются аргументами метода `getEndpoint`.
+* Чтобы отличить эндпоинт получения постов от эндпоинтов, связанных 
+с комментариями, проверьте, заканчивается ли путь на `posts` или содержит
+в себе ещё и `comments`. Также проверьте в пути количество частей, 
+разделённых косой чертой — `/`.
+* Чтобы сформировать нужный ответ, получите объект типа `OutputStream` с 
+помощью метода `getResponseBody`. Обратите внимание: нужно использовать 
+конструкцию `try-with-resources`, чтобы `OutputStream` был 
+закрыт после завершения работы с ним.
+* Помните: метод `sendResponseHeaders` должен быть вызван до метода `getResponseBody`.
+
+
+</details>
+
+<details>
+
+<summary>Задание 4</summary>
+
+## Задание 4
+
+Продолжаем разрабатывать HTTP-сервер для социальной сети.
+На этом этапе нужно реализовать обработку двух эндпоинтов:
+
+* `GET /posts` — для получения списка всех постов;
+* `GET /posts/{postId}/comments` — для получения комментариев к посту.
+
+Для этого в код программы были добавлены классы `Post` и `Comment` — они содержат информацию
+о постах и комментариях соответственно. У этих классов переопределён 
+метод `toString` — его можно использовать для получения текстового представления объекта.
+Также для удобства в программе созданы несколько постов и комментариев. 
+Они передаются в класс `PostsHandler` через его конструктор.
+
+Ваша задача — сосредоточиться на классе `PostsHandler` и доработать следующие 
+вспомогательные методы:
+* `handleGetPosts` — формирует HTTP-ответ, содержащий список постов в текстовом виде.
+* `handleGetComments` — формирует HTTP-ответ, содержащий список комментариев указанного 
+поста. Определить, какой именно пост нужен, поможет метод `getPostId`. 
+В методе `handleGetComments` нужно также предусмотреть обработку двух ситуаций:
+  * Если был передан некорректный идентификатор поста, то ответ должен содержать 
+  текст `Некорректный идентификатор поста`, а его код должен быть равен `400`.
+  * Если пост с указанным идентификатором не найден, то ответ должен содержать
+  текст `Пост с идентификатором postId не найден`, где вместо `postId` будет переданный 
+  идентификатор. Код ответа должен быть равен `404`.
+* `getPostId` — извлекает идентификатор поста из пути, указанного в запросе. 
+Если идентификатор указан некорректно — например, не является числом, 
+то нужно вернуть пустой объект `Optional`.
+
+Для отправки ответов используйте вспомогательный метод `writeResponse`.
+
+Пример и формат ответа:
+
+`GET /posts`
+
+```java
+Post{id=1, text='Привет, мир! Это мой самый первый пост здесь!', comments=[Comment{user='Великий комментатор', text='Классный контент, подписка!'}, Comment{user='Unknown user', text='Много букв'}]}
+Post{id=2, text='Я долго думал, что написать во втором посте, но решил пойти попить чай.', comments=[]} 
+
+```
+
+`GET /post/1/comments`
+
+```java
+Comment{user='Великий комментатор', text='Классный контент, подписка!'}
+Comment{user='Unknown user', text='Много букв'} 
+
+```
+
+
+```java
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+class PostsHandler implements HttpHandler {
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+    private final List<Post> posts;
+
+    public PostsHandler(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(), exchange.getRequestMethod());
+
+        switch (endpoint) {
+            case GET_POSTS: {
+                handleGetPosts(exchange);
+                break;
+            }
+            case GET_COMMENTS: {
+                handleGetComments(exchange);
+                break;
+            }
+            case POST_COMMENT: {
+                handlePostComments(exchange);
+                break;
+            }
+            default:
+                writeResponse(exchange, "Такого эндпоинта не существует", 404);
+        }
+    }
+
+    private void handleGetPosts(HttpExchange exchange) throws IOException {
+        // верните ответ, представляющий список постов. Код ответа должен быть 200.
+        // информация по каждому посту должна начинаться с новой строки.
+        // для преобразования объекта поста в строку воспользуйтесь его методом toString
+        ...
+    }
+
+    private void handleGetComments(HttpExchange exchange) throws IOException {
+        Optional<Integer> postIdOpt = getPostId(exchange);
+
+        /* Верните комментарии указанного поста. Информация о каждом комментарии 
+           должна начинаться с новой строки. Код статуса — 200.
+           Если запрос был составлен неверно, верните сообщение об ошибке с кодом 400.
+           Если пост с указанным идентификатором не найден, верните сообщение об этом с кодом 404. */
+        ...
+    }
+
+    private Optional<Integer> getPostId(HttpExchange exchange) {
+        /* Реализуйте метод получения идентификатора поста.
+           Если идентификатор не является числом, верните Optional.empty(). */
+        ...
+    }
+
+    private void handlePostComments(HttpExchange exchange) throws IOException {
+        writeResponse(exchange, "Этот эндпоинт пока не реализован", 200);
+    }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (pathParts.length == 2 && pathParts[1].equals("posts")) {
+            return Endpoint.GET_POSTS;
+        }
+        if (pathParts.length == 4 && pathParts[1].equals("posts") && pathParts[3].equals("comments")) {
+            if (requestMethod.equals("GET")) {
+                return Endpoint.GET_COMMENTS;
+            }
+            if (requestMethod.equals("POST")) {
+                return Endpoint.POST_COMMENT;
+            }
+        }
+        return Endpoint.UNKNOWN;
+    }
+
+    private void writeResponse(HttpExchange exchange,
+                               String responseString,
+                               int responseCode) throws IOException {
+        try (OutputStream os = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(responseCode, 0);
+            os.write(responseString.getBytes(DEFAULT_CHARSET));
+        }
+        exchange.close();
+    }
+
+    enum Endpoint {GET_POSTS, GET_COMMENTS, POST_COMMENT, UNKNOWN}
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        // инициализация начальных данных
+        List<Post> posts = new ArrayList<>();
+        Post post1 = new Post(1, "Это первый пост, который я здесь написал.");
+        post1.addComment(new Comment("Пётр Первый", "Я успел откомментировать первым!"));
+        posts.add(post1);
+
+        Post post2 = new Post(22, "Это будет второй пост. Тоже короткий.");
+        posts.add(post2);
+
+        Post post3 = new Post(333, "Это пока последний пост.");
+        posts.add(post3);
+
+        // настройка и запуск HTTP-сервера
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/posts", new PostsHandler(posts));
+        httpServer.start(); // запускаем сервер
+
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+        // завершаем работу сервера для корректной работы тренажёра
+        httpServer.stop(1);
+    }
+}
+
+class Post {
+    private int id;
+    private String text;
+    private List<Comment> comments = new ArrayList<>();
+
+    public Post(int id, String text) {
+        this.id = id;
+        this.text = text;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void addComment(Comment comment) {
+        comments.add(comment);
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", comments=" + comments +
+                '}';
+    }
+}
+
+class Comment {
+    private String user;
+    private String text;
+
+    public Comment(String user, String text) {
+        this.user = user;
+        this.text = text;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "user='" + user + '\'' +
+                ", text='" + text + '\'' +
+                '}';
+    }
+}
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+class PostsHandler implements HttpHandler {
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+    private final List<Post> posts;
+
+    public PostsHandler(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(), exchange.getRequestMethod());
+
+        switch (endpoint) {
+            case GET_POSTS: {
+                handleGetPosts(exchange);
+                break;
+            }
+            case GET_COMMENTS: {
+                handleGetComments(exchange);
+                break;
+            }
+            case POST_COMMENT: {
+                handlePostComments(exchange);
+                break;
+            }
+            default:
+                writeResponse(exchange, "Такого эндпоинта не существует", 404);
+        }
+    }
+
+    private void handleGetPosts(HttpExchange exchange) throws IOException {
+        // верните ответ, представляющий список постов. Код ответа должен быть 200.
+        // информация по каждому посту должна начинаться с новой строки.
+        // для преобразования объекта поста в строку воспользуйтесь его методом toString
+        StringBuilder responseString = new StringBuilder();
+        for (Post post : posts) {
+            responseString.append(post.toString());
+        }
+        writeResponse(exchange, responseString.toString(), 200);
+    }
+
+    private void handleGetComments(HttpExchange exchange) throws IOException {
+        Optional<Integer> postIdOpt = getPostId(exchange);
+
+        /* Верните комментарии указанного поста. Информация о каждом комментарии
+           должна начинаться с новой строки. Код статуса — 200.
+           Если запрос был составлен неверно, верните сообщение об ошибке с кодом 400.
+           Если пост с указанным идентификатором не найден, верните сообщение об этом с кодом 404. */
+        if (postIdOpt.isEmpty()) {
+            writeResponse(exchange, "Некорректный идентификатор поста", 400);
+        }
+        if (postIdOpt.isPresent()) {
+            Optional<Post> post = posts.stream().filter(p -> p.getId() == postIdOpt.get()).findFirst();
+            if (post.isPresent()) {
+                StringBuilder responseString = new StringBuilder();
+                for (Comment comment : post.get().getComments()) {
+                    responseString.append(comment.toString()).append("\n");
+                }
+                writeResponse(exchange, responseString.toString(), 200);
+            } else {
+                writeResponse(exchange, "Пост с идентификатором " + postIdOpt.get() + " не найден", 404);
+            }
+        }
+
+    }
+
+    private Optional<Integer> getPostId(HttpExchange exchange) {
+        /* Реализуйте метод получения идентификатора поста.
+           Если идентификатор не является числом, верните Optional.empty(). */
+        try {
+            String path = exchange.getRequestURI().getPath();
+            // а из path — профессию и имя
+            int postId = Integer.parseInt(path.split("/")[2]);
+            return Optional.of(postId);
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    private void handlePostComments(HttpExchange exchange) throws IOException {
+        writeResponse(exchange, "Этот эндпоинт пока не реализован", 200);
+    }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (pathParts.length == 2 && pathParts[1].equals("posts")) {
+            return Endpoint.GET_POSTS;
+        }
+        if (pathParts.length == 4 && pathParts[1].equals("posts") && pathParts[3].equals("comments")) {
+            if (requestMethod.equals("GET")) {
+                return Endpoint.GET_COMMENTS;
+            }
+            if (requestMethod.equals("POST")) {
+                return Endpoint.POST_COMMENT;
+            }
+        }
+        return Endpoint.UNKNOWN;
+    }
+
+    private void writeResponse(HttpExchange exchange,
+                               String responseString,
+                               int responseCode) throws IOException {
+        try (OutputStream os = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(responseCode, 0);
+            os.write(responseString.getBytes(DEFAULT_CHARSET));
+        }
+        exchange.close();
+    }
+
+    enum Endpoint {GET_POSTS, GET_COMMENTS, POST_COMMENT, UNKNOWN}
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        // инициализация начальных данных
+        List<Post> posts = new ArrayList<>();
+        Post post1 = new Post(1, "Это первый пост, который я здесь написал.");
+        post1.addComment(new Comment("Пётр Первый", "Я успел откомментировать первым!"));
+        posts.add(post1);
+
+        Post post2 = new Post(22, "Это будет второй пост. Тоже короткий.");
+        posts.add(post2);
+
+        Post post3 = new Post(333, "Это пока последний пост.");
+        posts.add(post3);
+
+        // настройка и запуск HTTP-сервера
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/posts", new PostsHandler(posts));
+        httpServer.start(); // запускаем сервер
+
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+        // завершаем работу сервера для корректной работы тренажёра
+        httpServer.stop(1);
+    }
+}
+
+
+
+
+```
+
+
+### Подсказки
+
+* Для отправки ответов используйте метод `writeResponse`, реализованный в предыдущем задании.
+* При обработке эндпоинтов, связанных с комментариями, помните: второй элемент
+пути запроса — это всегда идентификатор поста. Его можно преобразовать в число 
+с помощью метода `Integer.parseInt`.
+* Если идентификатор не является целым числом, то при его преобразовании
+возникнет исключение `NumberFormatException`.
+* Чтобы преобразовать объект в текст, вызовите его метод `toString`, 
+а чтобы добавить перенос строки, используйте специальный управляющий символ `\n`.
+
+</details>
+
+
+<details>
+
+<summary>Задание 5</summary>
+
+## Задание 5
+
+Вы практически завершили реализацию HTTP-сервера. Осталось написать обработку эндпоинта для добавления комментариев.
+
+Реализуйте метод `handlePostComments` в классе `PostsHandler`. Он будет обрабатывать
+запросы на добавление комментариев к посту. Для этого также нужно реализовать
+вспомогательный метод `parseComment`. Он будет принимать входящий поток байтов 
+тела запроса и конструировать из его содержимого объект класса `Comment` следующим образом:
+* первая строка тела запроса — имя пользователя, добавляющего комментарий;
+* все остальные строки — текст комментария;
+* если тело запроса пустое или содержит только одну строку, 
+нужно вернуть `Optional.empty()`; в противном случае возвращается 
+`Optional`, содержащий объект класса Comment с заполненными полями.
+
+```java
+
+
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
+import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+class PostsHandler implements HttpHandler {
+    private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+    private final List<Post> posts;
+
+    public PostsHandler(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        Endpoint endpoint = getEndpoint(exchange.getRequestURI().getPath(), exchange.getRequestMethod());
+
+        switch (endpoint) {
+            case GET_POSTS: {
+                handleGetPosts(exchange);
+                break;
+            }
+            case GET_COMMENTS: {
+                handleGetComments(exchange);
+                break;
+            }
+            case POST_COMMENT: {
+                handlePostComments(exchange);
+                break;
+            }
+            default:
+                writeResponse(exchange, "Такого эндпоинта не существует", 404);
+        }
+    }
+
+    private void handlePostComments(HttpExchange exchange) throws IOException {
+        // реализуйте обработку запроса на добавление комментария
+
+        // извлеките идентификатор поста и обработайте исключительные ситуации
+        ...
+        int postId = ...;
+
+        // получите комментарий из тела запроса
+        // не забудьте обработать исключительные ситуации
+        ... parseComment(exchange.getRequestBody());
+        ...
+        Comment comment = ...;
+
+        // добавьте комментарий к указанном посту
+        // не забудьте обработать ситуацию, когда пост не найден
+        ...
+    }
+
+    private Optional<Comment> parseComment(InputStream bodyInputStream) throws IOException {
+        // реализуйте код, разбирающий тело запроса и конструирующий объект комментария
+        
+        String body = ...;
+
+        /* Проанализируйте тело запроса и получите из него имя пользователя и текст комментария. 
+           Вам могут помочь методы indexOf и substring класса String. */
+        ...
+    }
+
+    private void handleGetPosts(HttpExchange exchange) throws IOException {
+        String response = posts.stream()
+                .map(Post::toString)
+                .collect(Collectors.joining("\n"));
+        writeResponse(exchange, response, 200);
+    }
+
+    private void handleGetComments(HttpExchange exchange) throws IOException {
+        Optional<Integer> postIdOpt = getPostId(exchange);
+        if(postIdOpt.isEmpty()) {
+            writeResponse(exchange, "Некорректный идентификатор поста", 400);
+            return;
+        }
+        int postId = postIdOpt.get();
+
+        for (Post post : posts) {
+            if (post.getId() == postId) {
+                String response = post.getComments().stream()
+                        .map(Comment::toString)
+                        .collect(Collectors.joining("\n"));
+                writeResponse(exchange, response, 200);
+                return;
+            }
+        }
+
+        writeResponse(exchange, "Пост с идентификатором " + postId + " не найден", 404);
+    }
+
+    private Optional<Integer> getPostId(HttpExchange exchange) {
+        String[] pathParts = exchange.getRequestURI().getPath().split("/");
+        try {
+            return Optional.of(Integer.parseInt(pathParts[2]));
+        } catch (NumberFormatException exception) {
+            return Optional.empty();
+        }
+    }
+
+    private Endpoint getEndpoint(String requestPath, String requestMethod) {
+        String[] pathParts = requestPath.split("/");
+
+        if (pathParts.length == 2 && pathParts[1].equals("posts")) {
+            return Endpoint.GET_POSTS;
+        }
+        if (pathParts.length == 4 && pathParts[1].equals("posts") && pathParts[3].equals("comments")) {
+            if (requestMethod.equals("GET")) {
+                return Endpoint.GET_COMMENTS;
+            }
+            if (requestMethod.equals("POST")) {
+                return Endpoint.POST_COMMENT;
+            }
+        }
+        return Endpoint.UNKNOWN;
+    }
+
+    private void writeResponse(HttpExchange exchange,
+                               String responseString,
+                               int responseCode) throws IOException {
+        try (OutputStream os = exchange.getResponseBody()) {
+            exchange.sendResponseHeaders(responseCode, 0);
+            os.write(responseString.getBytes(DEFAULT_CHARSET));
+        }
+        exchange.close();
+    }
+
+    enum Endpoint {GET_POSTS, GET_COMMENTS, POST_COMMENT, UNKNOWN}
+}
+
+public class Practicum {
+    private static final int PORT = 8080;
+
+    public static void main(String[] args) throws IOException {
+        // инициализация начальных данных
+        List<Post> posts = new ArrayList<>();
+        Post post1 = new Post(1, "Это первый пост, который я здесь написал.");
+        post1.addComment(new Comment("Пётр Первый", "Я успел откомментировать первым!"));
+        posts.add(post1);
+
+        Post post2 = new Post(22, "Это будет второй пост. Тоже короткий.");
+        posts.add(post2);
+
+        Post post3 = new Post(333, "Это пока последний пост.");
+        posts.add(post3);
+
+        // настройка и запуск HTTP-сервера
+        HttpServer httpServer = HttpServer.create(new InetSocketAddress(PORT), 0);
+        httpServer.createContext("/posts", new PostsHandler(posts));
+        httpServer.start(); // запускаем сервер
+
+        System.out.println("HTTP-сервер запущен на " + PORT + " порту!");
+        // завершаем работу сервера для корректной работы тренажёра
+        httpServer.stop(1);
+    }
+}
+
+class Post {
+    private int id;
+    private String text;
+    private List<Comment> comments = new ArrayList<>();
+
+    public Post(int id, String text) {
+        this.id = id;
+        this.text = text;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void addComment(Comment comment) {
+        comments.add(comment);
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", comments=" + comments +
+                '}';
+    }
+}
+
+class Comment {
+    private String user;
+    private String text;
+
+    public Comment(String user, String text) {
+        this.user = user;
+        this.text = text;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "user='" + user + '\'' +
+                ", text='" + text + '\'' +
+                '}';
+    }
+}
+
+```
+
+
+В процессе реализации учтите обработку следующих ситуаций:
+* Если комментарий успешно добавлен, то ответ должен содержать 
+текст `Комментарий добавлен`, а его код должен быть равен `201`.
+* Если был передан некорректный идентификатор поста, то ответ должен
+содержать текст `Некорректный идентификатор поста`, а его код должен быть равен `400`.
+* Если пост с указанным идентификатором не найден, то ответ должен
+содержать текст `Пост с идентификатором postId не найден`, 
+где вместо `postId` будет переданный идентификатор. Код ответа должен быть равен `404`.
+* Если в комментарии не указан пользователь или текст, 
+то ответ должен содержать текст `Поля комментария не могут быть пустыми`, 
+а код ответа должен быть равен `400`.
+
+```java
+
+
+
+```
+
+
+### Подсказки
+
 
 </details>
 
