@@ -8,6 +8,32 @@
 
 1. [Тестирование API с помощью Postman](#тестирование-api-с-помощью-postman)
 2. [Эндпоинты и HTTP-сервер](#эндпоинты-и-http-сервер)
+  * [Что такое эндпоинт](#что-такое-эндпоинт)
+  * [Составляющие HTTP-сервера](#составляющие-http-сервера)
+    * [Порт](#порт)
+    * [Сокет](#сокет)
+  * [Создаём HTTP-сервер](#создаём-http-сервер)
+  * [Привязываем HTTP-сервер к порту](#привязываем-http-сервер-к-порту)
+3. [Публикуем эндпоинты на сервере](#публикуем-эндпоинты-на-сервере)
+  * [Создаём HelloHandler](#создаём-hellohandler)
+  * [Связываем путь и обработчик запроса](#связываем-путь-и-обработчик-запроса)
+  * [Запускаем HTTP-сервер](#запускаем-http-сервер)
+4. [Разбираем HTTP-запросы](#разбираем-http-запросы)
+  * [InputStream getRequestBody()](#inputstream-getrequestbody)
+  * [String getRequestMethod()](#string-getrequestmethod)
+  * [Headers getRequestHeaders()](#headers-getrequestheaders)
+  * [URI getRequestURI()](#uri-getrequesturi)
+5. [Формируем HTTP-ответы](#формируем-http-ответы)
+  * [Headers getResponseHeaders()](#headers-getresponseheaders)
+  * [void sendResponseHeaders(int rCode, long responseLength)](#void-sendresponseheadersint-rcode-long-responselength)
+  * [OutputStream getResponseBody()](#outputstream-getresponsebody)
+6. [Краткий конспект](#краткий-конспект)
+7. [Задание 1](#задание-1)
+8. [Задание 2](#задание-2)
+9. [Задание 3](#задание-3)
+10. [Задание 4](#задание-4)
+11. [Задание 5](#задание-5)
+
 
 <details>
 
