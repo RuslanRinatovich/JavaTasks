@@ -50,4 +50,6 @@
 
 [Урок 25. Интернет и HTTP](LESSONS/LESSON25.MD)
 
-[Урок 26. Создание API](LESSONS/LESSON25.MD)
+[Урок 26. Создание API](LESSONS/LESSON26.MD)
+
+[Урок 27. JSON](LESSONS/LESSON27.MD)
