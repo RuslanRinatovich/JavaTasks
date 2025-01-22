@@ -879,6 +879,248 @@ class UserPost {
 
 </details>
 
+<details>
+
+<summary>Десериализуем коллекцию объектов и создаём редактор субтитров</summary>
+
+## Десериализуем коллекцию объектов и создаём редактор субтитров
+
+Часто нужно сериализовать и десериализовать не отдельные объекты, 
+а их список. Процесс сериализации в этом случае не отличается 
+от того, что уже вам знаком. В метод toJson передаётся 
+список объектов — в ответ возвращается строка с данными в JSON-формате.
+А вот с десериализацией всё немного иначе.
+
+
+### Как десериализовать коллекцию объектов
+Для корректной десериализации коллекции библиотеке Gson нужно 
+указать тип итогового объекта. В случае со списком объектов (например, List<User>) 
+неясно, какой именно тип указывать — User.class, List.class или даже ArrayList.class.
+
+Изучите код ниже. Попробуйте раскомментировать последнюю строчку метода main в нём.
+
+```java
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.util.List;
+
+class User {
+    private String name;
+    private int age;
+
+    public User() {
+    }
+
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+
+@SuppressWarnings("unchecked") // нужно для демонстрации примера
+public class Practicum {
+
+    public static void main(String[] args) {
+        List<User> users = List.of(
+                new User("Мария", 26),
+                new User("Иван", 41),
+                new User("Григорий", 16)
+        );
+
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .create();
+
+        String usersArrayJson = gson.toJson(users);
+
+        /* Если указать класс коллекции в качестве типа данных, то
+          Gson десериализует JSON-массив, но элементы в коллекции будут
+          приведены к типу Object. Тогда при обращении к методам, которых
+          нет в классе Object, во время выполнения программы возникнет ошибка. */
+        List<User> usersList = gson.fromJson(usersArrayJson, List.class);
+
+        /* Можно вывести список объектов, потому что при этом будет вызываться
+           метод toString — он есть у всех объектов (наследуется из Object). */
+        System.out.println(usersList.get(0));
+
+        // но если попробовать обратиться к полю класса User,
+        // возникнет исключение ClassCastException; при этом
+        // ошибка будет только во время выполнения программы,
+        // а не во время компиляции
+        // System.out.println(usersList.get(0).getName());
+    }
+}
+```
+
+Если скомпилировать этот код, то компилятор не выдаст никаких ошибок. Но во время выполнения 
+программы в последней строчке будет сгенерировано исключение — `ClassCastException`. 
+Такие ошибки трудно находить, и они часто проявляются уже при работе пользователя с программой.
+
+Дело в том, что при десериализации мы указали только класс коллекции,
+но не тип её элементов, так что библиотека Gson привела их к базовому типу `Object`.
+
+Чтобы корректно десериализовать JSON-массив, содержащий JSON-объекты,
+библиотека должна понимать:
+* какую коллекцию Java использовать для преобразования массива;
+* какой класс применить для преобразования элементов в объекты Java.
+
+Для этого в Gson есть вспомогательный класс `TypeToken<T>` и его метод `getType`. 
+`TypeToken<T> `используют в качестве базового класса, а вместо параметра типа подставляют
+нужную коллекцию с типом элементов. Дополнительные методы реализовывать не нужно.
+
+```java
+class UserListTypeToken extends TypeToken<List<User>> {
+    // здесь ничего не нужно реализовывать
+}
+```
+
+В дальнейшем полученный класс можно использовать для создания объекта. Вызов метода `getType` у этого объекта вернёт тип данных, который нужен для корректной десериализации.
+
+```java
+// используем ранее объявленный класс UserListTypeToken и метод getType
+gson.fromJson(usersArrayJson, new UserListTypeToken().getType());
+```
+
+Применим вспомогательный класс TypeToken, 
+чтобы корректно десериализовать коллекцию объектов из нашего примера.
+
+```java
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+
+import java.util.List;
+
+class User {
+    private String name;
+    private int age;
+
+    public User() {
+    }
+
+    public User(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}';
+    }
+}
+
+
+// вспомогательный класс для определения типа коллекции и типа её элементов
+class UserListTypeToken extends TypeToken<List<User>> {
+    // здесь ничего не нужно реализовывать
+}
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        List<User> users = List.of(
+                new User("Мария", 26),
+                new User("Иван", 41),
+                new User("Григорий", 16)
+        );
+
+        Gson gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .create();
+
+        String usersArrayJson = gson.toJson(users);
+
+        // используем TypeToken для указания правильного типа
+        List<User> usersList = gson.fromJson(usersArrayJson, new UserListTypeToken().getType());
+        
+        // используем методы класса User у элементов списка пользователей
+        System.out.println("User name: " + usersList.get(0).getName() + ", User age: " + usersList.get(0).getAge());
+    }
+}
+```
+
+![img_6.png](img_6.png)
+
+</details>
+
+<details>
+
+<summary>Краткий коспект</summary>
+
+## Краткий конспект
+
+Коротко опишем подход к работе с JSON в Java:
+* Для передачи данных между клиентом и сервером обычно используют один из 
+стандартных форматов (JSON, XML, Protobuf, YAML). Самый популярный из них — **JSON**.
+* Процесс трансформации Java-объекта в другой формат называют **сериализацией**, 
+а обратный процесс — **десериализацией**.
+* **POJO** — это классы — носители данных, которые часто используют 
+для сериализации данных в JSON и обратно. Для одного и того же класса, описывающего данные в базе данных, может быть несколько POJO, которые по-разному компонуют эти данные для ответов на запросы к API.
+* **Gson** — это простая и удобная библиотека для работы с JSON в Java [pkg:maven/com.google.code.gson/gson@2.11.0](https://central.sonatype.com/artifact/com.google.code.gson/gson).
+* Для сериализации объекта (его конвертации из POJO в JSON) в Gson используют метод `toJson`, 
+а для десериализации (из JSON в POJO) — метод `fromJson`.
+* Для передачи дополнительных настроек сериализации или десериализации используют
+класс `GsonBuilder`. С помощью него можно, например, выбрать стиль форматирования 
+JSON-объекта или указать, как обрабатывать `null`-значения.
+* Параметризованный класс `TypeAdapter` позволяет реализовать собственную логику
+конвертации для полей отдельных типов — например, для дат.
+Для этого нужно создать наследник класса `TypeAdapter`, передав в качестве параметра 
+типа нужный тип, и реализовать в нём методы `write` и `read`. Чтобы приложение 
+начало использовать новый конвертер, необходимо передать его в метод 
+`registerTypeAdapter` класса `GsonBuilder`.
+* Для корректной десериализации коллекций (и других параметризованных классов) в
+библиотеке `Gson` есть параметризованный класс `TypeToken`. Следует создать его наследник,
+передав в качестве параметра типа нужную коллекцию вместе с типом её элементов: 
+`class UserListTypeToken extends TypeToken<List<User>>`.
+Тогда при десериализации коллекций в качестве типа возвращаемого значения 
+нужно указать `new UserListTypeToken().getType()`.
+
+</details>
+
 
 <details>
 
@@ -1104,6 +1346,269 @@ class Like {
 * После получения сериализованного объекта в виде текста выведите его на экран.
 * Заполните объект класса информации о последнем лайке и десериализуйте 
 из значения типа `String` через методы объекта класса `Gson`.
+
+</details>
+
+
+<details>
+
+<summary>Задание 3</summary>
+
+## Задание 3
+
+Вам нужно реализовать программу, которая будет читать и записывать в JSON субтитры к фильмам, сериалам и роликам.
+
+Субтитры представляют собой список записей с текстом на разных языках и временны́ми метками. 
+Эти метки указывают на начало и окончание отображения фразы на экране.
+
+Чтобы субтитры было удобно читать и редактировать человеку, учтите следующее:
+* время начала и окончания можно будет задавать в JSON 
+в привычном формате — `чч:мм:сс.мсек` (`часы:минуты:секунды.миллисекунды`);
+* язык фразы можно будет задавать двумя буквами (например, `ru`, `en`, `cn` и так далее);
+* JSON будет записан в удобном для чтения формате с отступами и переносами строк.
+
+Мы сделали заготовку короткого диалога в виде переменной-списка в Java. Вам нужно:
+1. Восстановить структуру класса.
+2. Подготовить адаптеры и конвертер `Gson`.
+3. Реализовать простую проверку получившегося конвертера с помощью `equals`/`hashCode`.
+
+
+```java
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+
+??? SubtitleLanguage {
+
+}
+
+class SubtitleItem {
+    ... values = new HashMap<>();
+
+    ... begin;
+
+    ... end;
+
+		// геттеры и сеттеры
+
+    @Override
+    public boolean equals(Object o) {
+       ...
+    }
+
+    @Override
+    public int hashCode() {
+       ...
+    }
+    
+    public SubtitleItem(...) {
+			...
+    }
+}
+
+class SubtitleListTypeToken extends ??? {
+
+}
+
+class LocalTimeTypeAdapter extends ??? {
+    private final DateTimeFormatter timeFormatter = ???
+
+    @Override
+    public void write(???) throws IOException {
+
+    }
+
+    @Override
+    public LocalTime read(???) throws IOException {
+
+    }
+}
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        List<SubtitleItem> subtitles = Arrays.asList(
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Здравствуйте!",
+                        SubtitleLanguage.en, "Hello!",
+                        SubtitleLanguage.cn, "Ni hao"),
+                        LocalTime.of(0, 0, 15),
+                        LocalTime.of(0, 0, 17)
+                ),
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Привет!",
+                        SubtitleLanguage.en, "Hi!",
+                        SubtitleLanguage.cn, "Ni hao"),
+                        LocalTime.of(0, 0, 21),
+                        LocalTime.of(0, 0, 24)
+                ),
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Как дела?",
+                        SubtitleLanguage.en, "How are you?",
+                        SubtitleLanguage.cn, "Ni hao ma"),
+                        LocalTime.of(0, 0, 28),
+                        LocalTime.of(0, 0, 31)
+                ),
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Всё хорошо, спасибо!",
+                        SubtitleLanguage.en, "I'm fine, thank you!",
+                        SubtitleLanguage.cn, "Wo hen hao, xie xie"),
+                        LocalTime.of(0, 0, 34),
+                        LocalTime.of(0, 0, 37)
+                )
+        );
+        
+        // адаптер для преобразования типа LocalTime в String в формате субтитров
+        ??? localTimeTypeAdapter = ???
+        
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.???
+        Gson gson = gsonBuilder.???
+
+        String subtitlesJson = gson.toJson(???);
+        System.out.println(subtitlesJson);
+
+        List<SubtitleItem> parsed = gson.fromJson(???, ???);
+        if(parsed.equals(subtitles)) {
+            System.out.println("Субтитры десериализованы корректно.");
+        } else {
+            System.out.println("Произошла ошибка при десериализации.");
+        }
+    }
+}
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.TypeAdapter;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+
+import java.io.IOException;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+
+enum SubtitleLanguage {
+    ru,
+    en,
+    cn
+}
+
+class SubtitleItem {
+    Map<SubtitleLanguage, String> values = new HashMap<>();
+
+    LocalTime begin;
+
+    LocalTime end;
+
+    // геттеры и сеттеры
+
+    public SubtitleItem(Map<SubtitleLanguage, String> values, LocalTime begin, LocalTime end) {
+        this.values = values;
+        this.begin = begin;
+        this.end = end;
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SubtitleItem that = (SubtitleItem) o;
+        return Objects.equals(values, that.values) && Objects.equals(begin, that.begin) && Objects.equals(end, that.end);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(values, begin, end);
+    }
+}
+
+class SubtitleListTypeToken extends TypeToken<List<SubtitleItem>> {
+}
+
+class LocalTimeTypeAdapter extends TypeAdapter<LocalTime> {
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss.SSS");
+
+    @Override
+    public void write(final JsonWriter jsonWriter, final LocalTime localTime) throws IOException {
+        jsonWriter.value(localTime.format(timeFormatter));
+    }
+
+    @Override
+    public LocalTime read(final JsonReader jsonReader) throws IOException {
+        return LocalTime.parse(jsonReader.nextString(), timeFormatter);
+    }
+}
+
+public class Practicum {
+
+    public static void main(String[] args) {
+        List<SubtitleItem> subtitles = Arrays.asList(
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Здравствуйте!",
+                        SubtitleLanguage.en, "Hello!",
+                        SubtitleLanguage.cn, "Ni hao"),
+                        LocalTime.of(0, 0, 15),
+                        LocalTime.of(0, 0, 17)
+                ),
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Привет!",
+                        SubtitleLanguage.en, "Hi!",
+                        SubtitleLanguage.cn, "Ni hao"),
+                        LocalTime.of(0, 0, 21),
+                        LocalTime.of(0, 0, 24)
+                ),
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Как дела?",
+                        SubtitleLanguage.en, "How are you?",
+                        SubtitleLanguage.cn, "Ni hao ma"),
+                        LocalTime.of(0, 0, 28),
+                        LocalTime.of(0, 0, 31)
+                ),
+                new SubtitleItem(Map.of(SubtitleLanguage.ru, "Всё хорошо, спасибо!",
+                        SubtitleLanguage.en, "I'm fine, thank you!",
+                        SubtitleLanguage.cn, "Wo hen hao, xie xie"),
+                        LocalTime.of(0, 0, 34),
+                        LocalTime.of(0, 0, 37)
+                )
+        );
+
+        // адаптер для преобразования типа LocalTime в String в формате субтитров
+       // ???localTimeTypeAdapter = ???
+
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.setPrettyPrinting();
+        gsonBuilder.registerTypeAdapter(LocalTime.class, new LocalTimeTypeAdapter());
+        Gson gson = gsonBuilder.create();
+
+        String subtitlesJson = gson.toJson(subtitles);
+        System.out.println(subtitlesJson);
+
+        List<SubtitleItem> parsed = gson.fromJson(subtitlesJson, new SubtitleListTypeToken().getType());
+        if (parsed.equals(subtitles)) {
+            System.out.println("Субтитры десериализованы корректно.");
+        } else {
+            System.out.println("Произошла ошибка при десериализации.");
+        }
+    }
+}
+
+
+
+```
+
+### Подсказки
+
+* Имплементация `TypeAdapter<Т>` позволяет преобразовать значения типа Т в нужный формат.
+* Чтобы настроить конвертер `Gson`, пригодится `GsonBuilder`.
+* `equals`/`hashCode` нужно реализовать для класса `SubtitleItem`.
+* Тип результата можно указать через метод `getType()` экземпляра класса `TypeToken`.
 
 </details>
 
