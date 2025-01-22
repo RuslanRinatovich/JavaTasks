@@ -53,3 +53,5 @@
 [Урок 26. Создание API](LESSONS/LESSON26.MD)
 
 [Урок 27. JSON](LESSONS/LESSON27.MD)
+
+[Урок 28. Сетевые запросы](LESSONS/LESSON28.MD)
