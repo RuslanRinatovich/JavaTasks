@@ -3,6 +3,10 @@
 [В начало](readme.md) | [Содержание](readme.md) | [Урок 2](Lesson2.md)
 
 
+Материал для выполнения задания можно найти на сайте metanit.com по ссылке 
+*[Основы JAVA](https://metanit.com/java/tutorial/2.1.php)*
+
+
 # Задание 0
 
 Установить дома Intellegent Idea Community. Создать проект. Отправить его на GitHub. Прислать мне ссылку на git-репозиторий 
