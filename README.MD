@@ -55,3 +55,5 @@
 [Урок 27. JSON](LESSONS/LESSON27.MD)
 
 [Урок 28. Сетевые запросы](LESSONS/LESSON28.MD)
+
+[Урок 29. Логирование SLF4J](LESSONS/LESSON29.MD)
